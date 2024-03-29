@@ -43,7 +43,7 @@ To retrieve an uploaded file, send a GET request to http://0.0.0.0:5558/files/{i
 
 Example using curl:
 
-    curl http://0.0.0.0:5558/files/{id} --output retrieved_file.txt
+    curl http://0.0.0.0:5558/files/{id} --output retrieved_file.aes
 
 ## Contributing
 
