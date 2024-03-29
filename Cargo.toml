@@ -1,0 +1,14 @@
+[package]
+name = "xmtp-message-history-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+actix-web = "4.0"
+futures = "0.3.30"
+uuid = { version = "1", features = ["v4", "serde"] }
+
+[dev-dependencies]
+actix-rt = "2.9.0"
+actix-web = "4.0"
+tempfile = "3.10.1"
