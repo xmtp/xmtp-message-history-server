@@ -8,7 +8,13 @@ A simple, asynchronous file server to support XMTP Message History transfers. Ru
 
 Ensure you have the following installed:
 
-- Rust and Cargo. You can install them from [https://rustup.rs/](https://rustup.rs/)
+- Rust and Cargo. You can install them both from [https://rustup.rs](https://rustup.rs)
+- To run the example uploader, ensure python is installed on your system.
+
+Set the `SECRET_KEY` environment variable.
+
+    export SECRET_KEY=super-long-super-secret-unique-key-goes-here
+    
 
 ### Installing
 
@@ -44,6 +50,22 @@ To retrieve an uploaded file, send a GET request to http://0.0.0.0:5558/files/{i
 Example using curl:
 
     curl http://0.0.0.0:5558/files/{id} --output retrieved_file.aes
+
+### Example Client Uploader 
+
+Set up a virtual environment
+
+    python3 -m venv myenv
+    source myenv/bin/activate
+
+Install the dependencies
+
+    pip3 install -r requirements.txt
+
+Run the uploader script
+
+    python3 upload-client.py
+
 
 ## Contributing
 
