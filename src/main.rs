@@ -6,7 +6,7 @@ use std::sync::Mutex;
 use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use futures::StreamExt;
-use hex::decode;
+use hex::{decode, encode};
 use hmac::{Hmac, Mac};
 use sha2::Sha256;
 use uuid::Uuid;
@@ -63,13 +63,44 @@ async fn upload_file(
     HttpResponse::Ok().body(file_id.to_string())
 }
 
-async fn get_file(path: web::Path<Uuid>, data: web::Data<AppState>) -> impl Responder {
+async fn get_file(
+    req: HttpRequest,
+    path: web::Path<Uuid>,
+    data: web::Data<AppState>,
+) -> impl Responder {
+    // Extract the X-HMAC header
+    let hmac_header = match req.headers().get("X-HMAC") {
+        Some(value) => value.to_str().unwrap_or_default(),
+        None => return HttpResponse::BadRequest().body("Missing X-HMAC header"),
+    };
+
     let file_map = data.file_map.lock().unwrap();
 
     if let Some(file_name) = file_map.get(&path.into_inner()) {
-        HttpResponse::Ok()
-            .content_type("application/octet-stream")
-            .body(std::fs::read(file_name).unwrap())
+        // Read the file's content
+        let mut file = match File::open(file_name) {
+            Ok(f) => f,
+            Err(_) => return HttpResponse::InternalServerError().body("File not found"),
+        };
+        let mut buffer = Vec::new();
+        if file.read_to_end(&mut buffer).is_err() {
+            return HttpResponse::InternalServerError().body("Failed to read file");
+        }
+
+        // Compute the HMAC for the file content
+        let mut mac = HmacSha256::new_from_slice(data.secret_key.as_bytes())
+            .expect("HMAC can take key of any size");
+        mac.update(&buffer);
+        let result_hmac = encode(mac.finalize().into_bytes());
+
+        // Verify if the provided HMAC matches the computed one
+        if hmac_header == result_hmac {
+            HttpResponse::Ok() // Serve the file content
+                .content_type("application/octet-stream")
+                .body(buffer)
+        } else {
+            HttpResponse::Unauthorized().body("Invalid HMAC")
+        }
     } else {
         HttpResponse::NotFound().finish()
     }
@@ -136,7 +167,7 @@ mod tests {
     use sha2::Sha256;
 
     const SECRET_KEY: &[u8] = b"TEST_SECRET_KEY";
-    
+
     // Helper function to create a HMAC signature
     fn create_hmac_signature(secret_key: &[u8], data: &[u8]) -> String {
         let mut mac =
@@ -196,5 +227,33 @@ mod tests {
             resp.status().is_client_error(),
             "Should fail with incorrect HMAC"
         );
+    }
+
+
+    #[actix_rt::test]
+    async fn test_get_file() {
+        let file_contents = b"this too shall pass!"; // Simulated file contents
+        let correct_hmac = create_hmac_signature(SECRET_KEY, file_contents);
+        let incorrect_hmac = "nope".to_string();
+
+        let app = test::init_service(
+            App::new().route("/file", web::get().to(get_file))
+        ).await;
+
+        // Test with correct HMAC
+        let req = test::TestRequest::get()
+            .uri("/file")
+            .insert_header(("X-HMAC", correct_hmac))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_success(), "Should succeed with correct HMAC");
+
+        // Test with incorrect HMAC
+        let req = test::TestRequest::get()
+            .uri("/file")
+            .insert_header(("X-HMAC", incorrect_hmac))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(resp.status().is_client_error(), "Should fail with incorrect HMAC");
     }
 }
