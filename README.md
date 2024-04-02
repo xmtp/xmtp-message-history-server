@@ -1,6 +1,8 @@
 # XMTP Message History Server
 
-A simple, asynchronous file server to support XMTP Message History transfers. Running this server allows XMTP service providers to provide the ability for users to securely upload message history bundles via a `POST` request and retrieve them via a `GET` request using a unique ID assigned upon upload.   It is expected that these uploaded bundles should be: encrypted, short-lived, non-guessable, with scoped access to only authorized parties.
+A simple, asynchronous file server provided as an example to support XMTP Message History transfers. 
+
+Running this server allows XMTP service providers to provide the ability for users to securely upload message history bundles via a `POST` request and retrieve them via a `GET` request using a unique ID assigned upon upload.   It is expected that these uploaded bundles should be: encrypted, short-lived, non-guessable, with scoped access to only authorized parties.
 
 ## Getting Started
 
@@ -37,11 +39,15 @@ The server will start running on http://0.0.0.0:5558.
 
 ### Uploading a File
 
-To upload a file, send a POST request to http://0.0.0.1:5558/upload with the file data in the request body. The server will return a unique ID for the uploaded file.
+To upload a file, send a POST request to http://0.0.0.1:5558/upload with the file data in the request body.  The upload request must include an `X-HMAC` header using `SHA256` as the hashing algorithm.
+
+The server will return a unique ID for the uploaded file.
 
 Example using curl:
 
-    curl -X POST -F "file=@path/to/your/file.txt" http://0.0.0.0:5558/upload
+    curl -X POST http://0.0.0.0:5558/upload
+    -F "file=@path/to/your/message_bundle.aes"
+    -H "X-HMAC: <HMAC_VALUE_OF_FILE_SIGNED_WITH_SECRET_KEY>"
 
 Retrieving a File
 
@@ -51,7 +57,9 @@ Example using curl:
 
     curl http://0.0.0.0:5558/files/{id} --output retrieved_file.aes
 
-### Example Client Uploader 
+### Example Reference Client  
+
+    cd examples/
 
 Set up a virtual environment
 
@@ -64,8 +72,11 @@ Install the dependencies
 
 Run the uploader script
 
-    python3 upload-client.py
+    python3 upload-bundle.py
 
+Fetch the uploaded file 
+
+    python3 fetch-bundle.py
 
 ## Contributing
 
