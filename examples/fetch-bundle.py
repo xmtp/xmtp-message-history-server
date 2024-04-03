@@ -11,10 +11,12 @@ def download_messages_bundle(bundle_id, hmac_value):
     """
     
     # Construct the URL with the file's BUNDLE_ID
-    url = f"http://0.0.0.0:5558/files/{bundle_id}"
+    bundle_id_str = bundle_id.decode('utf-8')
+    url = f"http://0.0.0.0:5558/files/{bundle_id_str}"
 
     # Send the GET request with the X-HMAC header
-    headers = {'X-HMAC': hmac_value}
+    hmac_value_str = hmac_value.decode('utf-8')
+    headers = {'X-HMAC': hmac_value_str}
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
