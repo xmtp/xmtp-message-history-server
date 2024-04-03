@@ -159,6 +159,7 @@ async fn main() -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use actix_web::dev::Service;
     use actix_web::test;
     use tempfile::tempdir;
 
@@ -225,7 +226,7 @@ mod tests {
         // Cleanup: TempDir will automatically remove the temporary directory once it goes out of scope
     }
 
-    #[actix_rt::test]
+    #[actix_web::test]
     async fn test_get_file() {
         let data = web::Data::new(AppState {
             secret_key: std::str::from_utf8(SECRET_KEY).unwrap().to_string(),
@@ -234,7 +235,7 @@ mod tests {
 
         let file_contents = b"this too shall pass!"; // Simulated file contents
         let correct_hmac = create_hmac_signature(SECRET_KEY, file_contents);
-        let incorrect_hmac = "nope".to_string();
+        let incorrect_hmac = String::from("none shall pass");
 
         let temp_dir = tempdir().unwrap();
         let upload_path = temp_dir.path().join("uploads");
@@ -252,25 +253,17 @@ mod tests {
             .unwrap()
             .insert(file_id, file_name.display().to_string());
 
-        dbg!(&data.file_map);
-        
-        let app = test::init_service(
-            App::new()
-                .app_data(data)
-                .route(&format!("/files/{file_id}"), web::get().to(get_file)),
-        )
-        .await;
+        let app = test::init_service(App::new()
+            .app_data(data.clone())
+            .service(web::resource("/files/{id}").route(web::get().to(get_file)))).await;
 
         // Test with correct HMAC
         let req = test::TestRequest::get()
             .uri(&format!("/files/{file_id}"))
             .insert_header(("X-HMAC", correct_hmac))
             .to_request();
-        dbg!(&req);
+
         let resp = test::call_service(&app, req).await;
-        dbg!(&file_id);
-        dbg!(&file_name);
-        dbg!(&resp);
         assert!(
             resp.status().is_success(),
             "Should succeed with correct HMAC"
