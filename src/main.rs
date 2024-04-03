@@ -175,22 +175,22 @@ mod tests {
     // Tests the HMAC verification logic
     #[test]
     async fn test_hmac_verification() {
-        // test valid HMAC passes as Ok(())
+        // Test valid HMAC passes as Ok(())
         let correct_payload = b"correct payload";
         let correct_hmac = create_hmac_signature(SECRET_KEY, correct_payload);
         let verify_correct = verify_hmac(&correct_hmac, correct_payload, SECRET_KEY);
 
         assert!(verify_correct.is_ok(), "Should succeed with correct HMAC");
 
-        // test invvalid HMAC returns an HttpResponse())
+        // Test invvalid HMAC returns an HttpResponse())
         let incorrect_payload = b"incorrect payload";
         let verify_incorrect = verify_hmac(&correct_hmac, incorrect_payload, SECRET_KEY);
         assert!(verify_incorrect.is_err());
     }
 
-    #[actix_rt::test]
+    #[actix_web::test]
     async fn test_upload_file() {
-        // set up application state
+        // Set up application state
         let data = web::Data::new(AppState {
             secret_key: std::str::from_utf8(SECRET_KEY).unwrap().to_string(),
             file_map: Mutex::new(HashMap::new()),
@@ -202,6 +202,17 @@ mod tests {
                 .route("/upload", web::post().to(upload_file)),
         )
         .await;
+
+        // Test with incorrect HMAC
+        let req = test::TestRequest::get()
+            .uri("/upload")
+            .insert_header(("X-HMAC", "incorrect_hmac"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(
+            resp.status().is_client_error(),
+            "Should fail with incorrect HMAC"
+        );
 
         let correct_payload = b"correct payload";
         let correct_hmac = create_hmac_signature(SECRET_KEY, correct_payload);
@@ -221,12 +232,11 @@ mod tests {
             !file_map.is_empty(),
             "File map should not be empty after upload"
         );
-
-        // Cleanup: TempDir will automatically remove the temporary directory once it goes out of scope
     }
 
     #[actix_web::test]
     async fn test_get_file() {
+        // Set up application state
         let data = web::Data::new(AppState {
             secret_key: std::str::from_utf8(SECRET_KEY).unwrap().to_string(),
             file_map: Mutex::new(HashMap::new()),
@@ -252,9 +262,12 @@ mod tests {
             .unwrap()
             .insert(file_id, file_name.display().to_string());
 
-        let app = test::init_service(App::new()
-            .app_data(data.clone())
-            .service(web::resource("/files/{id}").route(web::get().to(get_file)))).await;
+        let app = test::init_service(
+            App::new()
+                .app_data(data.clone())
+                .service(web::resource("/files/{id}").route(web::get().to(get_file))),
+        )
+        .await;
 
         // Test with correct HMAC
         let req = test::TestRequest::get()
