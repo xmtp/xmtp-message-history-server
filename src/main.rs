@@ -31,7 +31,18 @@ async fn upload_file(
 
     // Create a new UUID for the file.
     let file_id = Uuid::new_v4();
-    let file_name = format!("uploads/{}", file_id);
+    let file_name: String;
+
+    #[cfg(not(test))]
+    {
+        file_name = format!("uploads/{}", file_id)
+    }
+
+    #[cfg(test)]
+    {
+        use tempfile::NamedTempFile;
+        file_name = NamedTempFile::new().unwrap().path().to_string_lossy().to_string();
+    }
 
     // Try to create the file.
     let mut file = match File::create(&file_name) {
