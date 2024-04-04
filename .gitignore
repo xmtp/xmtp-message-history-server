@@ -1,3 +1,5 @@
 /target
 uploads/
 examples/myenv
+examples/messages*
+examples/*.aes

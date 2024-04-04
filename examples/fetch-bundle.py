@@ -1,13 +1,22 @@
+import pyAesCrypt
 import requests
 import os
 
-def download_messages_bundle(bundle_id, hmac_value):
+def decrypt(key, source):
+    parts = source.rsplit(".aes", 1)
+    output = parts[0] if len(parts) > 1 else source
+    key_str = key.decode('utf-8')
+    pyAesCrypt.decryptFile(source, output, key_str)
+    return
+
+def download_messages_bundle(bundle_id, hmac_value, aes_key):
     """
     Downloads a file from the specified endpoint using a GET request with an X-HMAC header.
 
     Parameters:
     - bundle_id (str): The unique identifier for the file.
     - hmac_value (str): The HMAC signature value of the file with `bundle_id`.
+    - aes_key (str): The AES key used to decrypt the downloaded file.
     """
     
     # Construct the URL with the file's BUNDLE_ID
@@ -21,9 +30,14 @@ def download_messages_bundle(bundle_id, hmac_value):
 
     if response.status_code == 200:
         print("File downloaded successfully.")
-        # Here, you will want to save the file content to a file, for example:
-        with open(f"messages_bundle_{bundle_id}", 'wb') as file:
+        # Here, you will want to save the file content to a file.
+        file_name = f"messages_bundle_{bundle_id_str}.aes"
+        with open(file_name, 'wb') as file:
             file.write(response.content)
+        
+        decrypt(aes_key, file_name)
+        print(f"Successfully decrypted {file_name}")
+            
     else:
         print(f"Failed to download file. Status code: {response.status_code} Response: {response.text}")
 
@@ -31,15 +45,20 @@ def download_messages_bundle(bundle_id, hmac_value):
 if __name__ == "__main__":
     # The assigned bundle_id returned from calling `python upload-bundle.py`
     bundle_id = os.environ.get("BUNDLE_ID", "").encode()
-    # The value from calculating the hmac signature for the uploaded messages bundle file
-    hmac_value = os.environ.get("HMAC_VALUE", "").encode()  
-
     if not bundle_id:
         print("BUNDLE_ID environment variable is not set.")
         exit(1)
         
+    # The value from calculating the hmac signature for the uploaded messages bundle file
+    hmac_value = os.environ.get("HMAC_VALUE", "").encode()  
     if not hmac_value:
         print("HMAC_VALUE environment variable is not set.")
         exit(1)
-    
-    download_messages_bundle(bundle_id, hmac_value)
+
+    # Ensure the aes key is not empty
+    aes_key = os.environ.get("AES_KEY", "").encode()
+    if not aes_key:
+        print("AES_KEY environment variable is not set.")
+        exit(1)
+ 
+    download_messages_bundle(bundle_id, hmac_value, aes_key)

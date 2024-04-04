@@ -16,7 +16,11 @@ Ensure you have the following installed:
 Set the `SECRET_KEY` environment variable.
 
     export SECRET_KEY=super-long-super-secret-unique-key-goes-here
-    
+
+Set the `AES_KEY` environment variable.
+
+    export AES=only-authorized-installations-should-share-this-key
+ 
 
 ### Installing
 
@@ -55,11 +59,16 @@ To retrieve an uploaded file, send a GET request to http://0.0.0.0:5558/files/{i
 
 Example using curl:
 
-    curl http://0.0.0.0:5558/files/{id} --output retrieved_file.aes
+    curl http://0.0.0.0:5558/files/{id} 
+    -H "X-HMAC: <HMAC_VALUE_OF_FILE_SIGNED_WITH_SECRET_KEY>" 
+    --output retrieved_file.aes
+
 
 ### Example Reference Client  
 
-    cd examples/
+An example set of python scripts are available in the `examples/` folder demonstrating the full roundtrip of:
+- encrypting, signing, uploading in `upload-bundle.py`
+- authenticating (using the hmac key), downloading, and decrypting in `fetch-bundle.py` 
 
 Set up a virtual environment
 
@@ -76,6 +85,8 @@ Run the uploader script
 
 Fetch the uploaded file 
 
+    # export BUNDLE_ID=<bundle-id-from-upload-bundle-response>
+    # export HMAC_VALUE=<hmac-value-from-upload-bundle-response>
     python3 fetch-bundle.py
 
 ## Contributing
