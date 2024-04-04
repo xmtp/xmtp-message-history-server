@@ -19,7 +19,7 @@ Set the `SECRET_KEY` environment variable.
 
 Set the `AES_KEY` environment variable.
 
-    export AES=only-authorized-installations-should-share-this-key
+    export AES_KEY=only-authorized-installations-should-share-this-key
  
 
 ### Installing
