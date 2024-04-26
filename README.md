@@ -2,7 +2,8 @@
 
 A simple, asynchronous file server provided as an example to support XMTP Message History transfers. 
 
-Running this server allows XMTP service providers to provide the ability for users to securely upload message history bundles via a `POST` request and retrieve them via a `GET` request from another authorized app or device, using a unique ID assigned upon upload.   It is expected that these uploaded bundles should be: encrypted, short-lived, non-guessable, with scoped access to only authorized parties.
+Running this server allows XMTP service providers to provide the ability for users to securely upload message history bundles via a `POST` request and retrieve them via a `GET` request from another authorized app or device, using a unique ID assigned upon upload.   
+It is expected that these uploaded bundles should be: encrypted, short-lived, non-guessable, with scoped access to only authorized parties.
 
 ## Getting Started
 
@@ -11,9 +12,7 @@ Running this server allows XMTP service providers to provide the ability for use
 Ensure you have the following installed:
 
 - Rust and Cargo. You can install them both from [https://rustup.rs](https://rustup.rs)
-- To run the example uploader, ensure python is correctly installed on your system.
-
-
+- To run the scripts in the [`examples/`](./examples/) folder, ensure python is correctly installed on your system.
 
 ### Installing
 
@@ -41,7 +40,7 @@ Set the `AES_KEY` and `SIGNING_KEY` environment variables.
 
 ### Uploading a File
 
-To upload a file, send a POST request to http://0.0.0.1:5558/upload with the file data in the request body.  
+To upload a file, send a POST request to http://0.0.0.0:5558/upload with the file data in the request body.  
 
 The server will return a unique ID for the uploaded file.
 
