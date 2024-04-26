@@ -1,7 +1,6 @@
-use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Read, Write};
-use std::sync::Mutex;
+use std::path::PathBuf;
 
 use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
@@ -13,21 +12,7 @@ use uuid::Uuid;
 
 type HmacSha256 = Hmac<Sha256>;
 
-// Define a state to hold the mapping of UUIDs to file names.
-struct AppState {
-    file_map: Mutex<HashMap<Uuid, String>>,
-}
-
-async fn upload_file(
-    _req: HttpRequest,
-    mut payload: web::Payload,
-    data: web::Data<AppState>,
-) -> impl Responder {
-    // let hmac_header = match req.headers().get("X-HMAC") {
-    //     Some(value) => value.to_str().unwrap_or_default(),
-    //     None => return HttpResponse::BadRequest().body("Missing X-HMAC header"),
-    // };
-
+async fn upload_file(_req: HttpRequest, mut payload: web::Payload) -> impl Responder {
     // Create a new UUID for the file.
     let file_id = Uuid::new_v4();
     let file_name: String;
@@ -61,33 +46,10 @@ async fn upload_file(
         }
     }
 
-    // Commented below, as we aren't verifying the uploaded file.  Anything can be uploaded.
-
-    // let mut buffer = Vec::new();
-    // if let Ok(mut f) = File::open(file_name.clone()) {
-    //     let _ = f.read_to_end(&mut buffer);
-    // } else {
-    //     return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR);
-    // }
-    //
-    // // Verify HMAC
-    // let secret_key = data.secret_key.as_bytes();
-    // if let Err(response) = verify_hmac(hmac_header, &buffer, secret_key) {
-    //     let _ = std::fs::remove_file(file_name);
-    //     return response;
-    // }
-
-    // Insert the file ID and name into the state map.
-    data.file_map.lock().unwrap().insert(file_id, file_name);
-
     HttpResponse::Ok().body(file_id.to_string())
 }
 
-async fn get_file(
-    req: HttpRequest,
-    path: web::Path<Uuid>,
-    data: web::Data<AppState>,
-) -> impl Responder {
+async fn get_file(req: HttpRequest, path: web::Path<Uuid>) -> impl Responder {
     // Extract the X-HMAC header
     let hmac_header = match req.headers().get("X-HMAC") {
         Some(value) => value.to_str().unwrap_or_default(),
@@ -100,11 +62,13 @@ async fn get_file(
         None => return HttpResponse::BadRequest().body("Missing X-SIGNING-KEY header"),
     };
 
-    let file_map = data.file_map.lock().unwrap();
+    let file_id = path.to_string();
 
-    if let Some(file_name) = file_map.get(&path.into_inner()) {
+    let file_path: PathBuf = format!("uploads/{}", file_id).into();
+
+    if file_path.exists() {
         // Read the file's content
-        let mut file = match File::open(file_name) {
+        let mut file = match File::open(file_path) {
             Ok(f) => f,
             Err(_) => return HttpResponse::NotFound().body("File not found"),
         };
@@ -133,6 +97,7 @@ async fn get_file(
 }
 
 /// Verifies the HMAC of the request.
+#[allow(dead_code)]
 fn verify_hmac(
     hmac_header: &str,
     file_bytes: &[u8],
@@ -161,13 +126,8 @@ fn verify_hmac(
 async fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("uploads").unwrap();
 
-    let app_state = web::Data::new(AppState {
-        file_map: Mutex::new(HashMap::new()),
-    });
-
     HttpServer::new(move || {
         App::new()
-            .app_data(app_state.clone())
             .service(web::resource("/upload").route(web::post().to(upload_file)))
             .service(web::resource("/files/{id}").route(web::get().to(get_file)))
     })
@@ -179,8 +139,9 @@ async fn main() -> std::io::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use actix_web::body;
     use actix_web::test;
-    use tempfile::tempdir;
+    use std::path::Path;
 
     const SIGNING_KEY: &[u8] = b"TEST_SECRET_KEY";
 
@@ -210,17 +171,8 @@ mod tests {
 
     #[actix_web::test]
     async fn test_upload_file() {
-        // Set up application state
-        let data = web::Data::new(AppState {
-            file_map: Mutex::new(HashMap::new()),
-        });
-
-        let app = test::init_service(
-            App::new()
-                .app_data(data.clone())
-                .route("/upload", web::post().to(upload_file)),
-        )
-        .await;
+        let app =
+            test::init_service(App::new().route("/upload", web::post().to(upload_file))).await;
 
         // Test with incorrect HMAC
         let req = test::TestRequest::get()
@@ -235,64 +187,46 @@ mod tests {
 
         let correct_payload = b"correct payload";
         let correct_hmac = create_hmac_signature(SIGNING_KEY, correct_payload);
+        assert!(!correct_hmac.is_empty());
 
         let req = test::TestRequest::post()
             .uri("/upload")
-            .insert_header(("X-HMAC", correct_hmac))
             .set_payload(correct_payload.to_vec())
             .to_request();
 
         let resp = test::call_service(&app, req).await;
         assert!(resp.status().is_success());
 
-        // Verify that the file was created and the HMAC was correctly verified
-        let file_map = data.file_map.lock().unwrap();
-        assert!(
-            !file_map.is_empty(),
-            "File map should not be empty after upload"
-        );
+        let body = resp.into_body();
+        let bytes = body::to_bytes(body).await.unwrap();
+        assert!(Uuid::try_parse_ascii(&bytes).is_ok());
     }
 
     #[actix_web::test]
     async fn test_get_file() {
-        // Set up application state
-        let data = web::Data::new(AppState {
-            file_map: Mutex::new(HashMap::new()),
-        });
-        // and the secret key
         let signing_key = std::str::from_utf8(SIGNING_KEY).unwrap().to_string();
 
         let file_contents = b"this too shall pass!"; // Simulated file contents
         let correct_hmac = create_hmac_signature(SIGNING_KEY, file_contents);
         let incorrect_hmac = String::from("none shall pass");
 
-        let temp_dir = tempdir().unwrap();
-        let upload_path = temp_dir.path().join("uploads");
-        std::fs::create_dir_all(&upload_path).unwrap();
+        let uploads_path = "uploads";
+        std::fs::create_dir_all(uploads_path).unwrap();
 
         let file_id = Uuid::new_v4();
-        let file_name = upload_path.as_path().join(file_id.to_string());
+        let file_name = Path::new(uploads_path).join(file_id.to_string());
         let mut file = File::create(&file_name).unwrap();
         let _ = file.write_all(file_contents);
 
-        // Insert the file ID and name into the state map.
-        let _ = data
-            .file_map
-            .lock()
-            .unwrap()
-            .insert(file_id, file_name.display().to_string());
-
         let app = test::init_service(
-            App::new()
-                .app_data(data.clone())
-                .service(web::resource("/files/{id}").route(web::get().to(get_file))),
+            App::new().service(web::resource("/files/{id}").route(web::get().to(get_file))),
         )
         .await;
 
         // Test with correct HMAC
         let req = test::TestRequest::get()
             .uri(&format!("/files/{file_id}"))
-            .insert_header(("X-HMAC", correct_hmac))
+            .insert_header(("X-HMAC", correct_hmac.clone()))
             .insert_header(("X-SIGNING-KEY", signing_key))
             .to_request();
 
@@ -306,11 +240,24 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/files/{file_id}"))
             .insert_header(("X-HMAC", incorrect_hmac))
+            .insert_header(("X-SIGNING-KEY", "doesnt matter"))
             .to_request();
         let resp = test::call_service(&app, req).await;
         assert!(
             resp.status().is_client_error(),
             "Should fail with incorrect HMAC"
+        );
+
+        // Test with incorrect Signing Key
+        let req = test::TestRequest::get()
+            .uri(&format!("/files/{file_id}"))
+            .insert_header(("X-HMAC", correct_hmac))
+            .insert_header(("X-SIGNING-KEY", "wrong"))
+            .to_request();
+        let resp = test::call_service(&app, req).await;
+        assert!(
+            resp.status().is_client_error(),
+            "Should fail with incorrect Signing Key"
         );
     }
 }
