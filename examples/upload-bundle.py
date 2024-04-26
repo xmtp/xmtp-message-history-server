@@ -6,20 +6,26 @@ import os
 
 file_path = "test_bundle.jsonl"
 
-def upload_message_bundle(file_path, secret_key):
+def encrypt(source, key):
+    key_str = key.decode('utf-8')
+    output = source + ".aes"
+    pyAesCrypt.encryptFile(source, output, key_str)
+    return output
+
+def upload_message_bundle(file_path, signing_key):
     """
     Uploads a file to the specified endpoint. The file should be encrypted.
 
     Parameters:
     - file_path (str): The path to the file to upload.
-    - secret_key (str): The secret key to use to sign the HMAC signature with.
+    - signing_key (str): The key used to sign the HMAC.
     """
      # The request payload consisting of a message history bundle
     with open(file_path, 'rb') as file:
         file_content = file.read()
 
         # Compute the HMAC
-        hmac_instance = hmac.new(secret_key, file_content, hashlib.sha256)
+        hmac_instance = hmac.new(signing_key, file_content, hashlib.sha256)
         hmac_hex = hmac_instance.hexdigest()
         print(f"HMAC: {hmac_hex}")
 
@@ -30,17 +36,11 @@ def upload_message_bundle(file_path, secret_key):
         print(f"Response Status Code: {response.status_code}")
         print(f"Response Body: {response.text}")
 
-def encrypt(key, source):
-    key_str = key.decode('utf-8')
-    output = source + ".aes"
-    pyAesCrypt.encryptFile(source, output, key_str)
-    return output
-
 if __name__ == "__main__":
-    # Ensure the secret key is not empty
-    secret_key = os.environ.get("SECRET_KEY", "").encode()
-    if not secret_key:
-        print("SECRET_KEY environment variable is not set.")
+    # Ensure the signing key is not empty
+    signing_key = os.environ.get("SIGNING_KEY", "").encode()
+    if not signing_key:
+        print("SIGNING_KEY environment variable is not set.")
         exit(1)
 
     # Ensure the aes key is not empty
@@ -49,8 +49,8 @@ if __name__ == "__main__":
         print("AES_KEY environment variable is not set.")
         exit(1)
         
-    encrypted_file = encrypt(aes_key, file_path)
+    encrypted_file = encrypt(file_path, aes_key)
     
-    upload_message_bundle(encrypted_file, secret_key)
+    upload_message_bundle(encrypted_file, signing_key)
     
 

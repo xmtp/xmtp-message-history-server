@@ -13,14 +13,7 @@ Ensure you have the following installed:
 - Rust and Cargo. You can install them both from [https://rustup.rs](https://rustup.rs)
 - To run the example uploader, ensure python is correctly installed on your system.
 
-Set the `SECRET_KEY` environment variable.
 
-    export SECRET_KEY=super-long-super-secret-unique-key-goes-here
-
-Set the `AES_KEY` environment variable.
-
-    export AES_KEY=only-authorized-installations-should-share-this-key
- 
 
 ### Installing
 
@@ -41,9 +34,14 @@ The server will start running on http://0.0.0.0:5558.
 
 ## Usage
 
+Set the `AES_KEY` and `SIGNING_KEY` environment variables.
+
+    export AES_KEY=only-authorized-installations-should-share-this-key
+    export SIGNING_KEY=used-to-sign-the-message-bundle
+
 ### Uploading a File
 
-To upload a file, send a POST request to http://0.0.0.1:5558/upload with the file data in the request body.  The upload request must include an `X-HMAC` header using `SHA256` as the hashing algorithm.
+To upload a file, send a POST request to http://0.0.0.1:5558/upload with the file data in the request body.  
 
 The server will return a unique ID for the uploaded file.
 
@@ -51,18 +49,29 @@ Example using curl:
 
     curl -X POST http://0.0.0.0:5558/upload
     -F "file=@path/to/your/message_bundle.aes"
-    -H "X-HMAC: <HMAC_VALUE_OF_FILE_SIGNED_WITH_SECRET_KEY>"
 
-Retrieving a File
+### Retrieving a File
 
-To retrieve an uploaded file, send a GET request to http://0.0.0.0:5558/files/{id}, where {id} is the unique ID returned by the server during the upload.
+To retrieve an uploaded file, you must possess the `HMAC_SIGNATURE` and `SIGNING_KEY` of the message_bundle.
+
+The request must include 
+
+- an `X-HMAC` header using `SHA256` as the hashing algorithm.
+- an `X-SIGNING-KEY` header set to the `SIGNING_KEY`
+
+
+Send a GET request to http://0.0.0.0:5558/files/{id}, where {id} is the unique ID returned by the server during the upload.
 
 Example using curl:
 
     curl http://0.0.0.0:5558/files/{id} 
-    -H "X-HMAC: <HMAC_VALUE_OF_FILE_SIGNED_WITH_SECRET_KEY>" 
+    -H "X-HMAC: <HMAC_VALUE_OF_FILE_SIGNED_WITH_SIGNING_KEY>"
+    -H "X-SIGNING-KEY: <KEY_THAT_SIGNED_THE_BUNDLE>" 
     --output retrieved_file.aes
 
+### Decrypting a File
+
+To decrypt the downloaded file, you must possess the `AES_KEY` that was used to encrypt the message_bundle.
 
 ### Example Reference Client  
 

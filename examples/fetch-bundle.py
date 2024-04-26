@@ -2,20 +2,21 @@ import pyAesCrypt
 import requests
 import os
 
-def decrypt(key, source):
+def decrypt(source, key):
     parts = source.rsplit(".aes", 1)
     output = parts[0] if len(parts) > 1 else source
     key_str = key.decode('utf-8')
     pyAesCrypt.decryptFile(source, output, key_str)
     return
 
-def download_messages_bundle(bundle_id, hmac_value, aes_key):
+def download_messages_bundle(bundle_id, hmac_value, signing_key, aes_key):
     """
-    Downloads a file from the specified endpoint using a GET request with an X-HMAC header.
+    Downloads a file from the specified endpoint using a GET request with X-HMAC & X-SIGNING-KEY headers.
 
     Parameters:
     - bundle_id (str): The unique identifier for the file.
     - hmac_value (str): The HMAC signature value of the file with `bundle_id`.
+    - signing_key (str): The key used to sign the bundle.
     - aes_key (str): The AES key used to decrypt the downloaded file.
     """
     
@@ -25,7 +26,7 @@ def download_messages_bundle(bundle_id, hmac_value, aes_key):
 
     # Send the GET request with the X-HMAC header
     hmac_value_str = hmac_value.decode('utf-8')
-    headers = {'X-HMAC': hmac_value_str}
+    headers = {'X-HMAC': hmac_value_str, 'X-SIGNING-KEY': signing_key}
     response = requests.get(url, headers=headers)
 
     if response.status_code == 200:
@@ -35,7 +36,7 @@ def download_messages_bundle(bundle_id, hmac_value, aes_key):
         with open(file_name, 'wb') as file:
             file.write(response.content)
         
-        decrypt(aes_key, file_name)
+        decrypt(file_name, aes_key)
         print(f"Successfully decrypted {file_name}")
             
     else:
@@ -54,11 +55,17 @@ if __name__ == "__main__":
     if not hmac_value:
         print("HMAC_VALUE environment variable is not set.")
         exit(1)
-
+        
+    # Ensure the signing key is not empty
+    signing_key = os.environ.get("SIGNING_KEY", "").encode()
+    if not signing_key:
+        print("SIGNING_KEY environment variable is not set.")
+        exit(1)
+        
     # Ensure the aes key is not empty
     aes_key = os.environ.get("AES_KEY", "").encode()
     if not aes_key:
         print("AES_KEY environment variable is not set.")
         exit(1)
- 
-    download_messages_bundle(bundle_id, hmac_value, aes_key)
+
+    download_messages_bundle(bundle_id, hmac_value, signing_key, aes_key)

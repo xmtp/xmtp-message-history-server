@@ -16,18 +16,17 @@ type HmacSha256 = Hmac<Sha256>;
 // Define a state to hold the mapping of UUIDs to file names.
 struct AppState {
     file_map: Mutex<HashMap<Uuid, String>>,
-    secret_key: String,
 }
 
 async fn upload_file(
-    req: HttpRequest,
+    _req: HttpRequest,
     mut payload: web::Payload,
     data: web::Data<AppState>,
 ) -> impl Responder {
-    let hmac_header = match req.headers().get("X-HMAC") {
-        Some(value) => value.to_str().unwrap_or_default(),
-        None => return HttpResponse::BadRequest().body("Missing X-HMAC header"),
-    };
+    // let hmac_header = match req.headers().get("X-HMAC") {
+    //     Some(value) => value.to_str().unwrap_or_default(),
+    //     None => return HttpResponse::BadRequest().body("Missing X-HMAC header"),
+    // };
 
     // Create a new UUID for the file.
     let file_id = Uuid::new_v4();
@@ -41,7 +40,11 @@ async fn upload_file(
     #[cfg(test)]
     {
         use tempfile::NamedTempFile;
-        file_name = NamedTempFile::new().unwrap().path().to_string_lossy().to_string();
+        file_name = NamedTempFile::new()
+            .unwrap()
+            .path()
+            .to_string_lossy()
+            .to_string();
     }
 
     // Try to create the file.
@@ -58,19 +61,21 @@ async fn upload_file(
         }
     }
 
-    let mut buffer = Vec::new();
-    if let Ok(mut f) = File::open(file_name.clone()) {
-        let _ = f.read_to_end(&mut buffer);
-    } else {
-        return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR);
-    }
+    // Commented below, as we aren't verifying the uploaded file.  Anything can be uploaded.
 
-    // Verify HMAC
-    let secret_key = data.secret_key.as_bytes();
-    if let Err(response) = verify_hmac(hmac_header, &buffer, secret_key) {
-        let _ = std::fs::remove_file(file_name);
-        return response;
-    }
+    // let mut buffer = Vec::new();
+    // if let Ok(mut f) = File::open(file_name.clone()) {
+    //     let _ = f.read_to_end(&mut buffer);
+    // } else {
+    //     return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR);
+    // }
+    //
+    // // Verify HMAC
+    // let secret_key = data.secret_key.as_bytes();
+    // if let Err(response) = verify_hmac(hmac_header, &buffer, secret_key) {
+    //     let _ = std::fs::remove_file(file_name);
+    //     return response;
+    // }
 
     // Insert the file ID and name into the state map.
     data.file_map.lock().unwrap().insert(file_id, file_name);
@@ -89,6 +94,12 @@ async fn get_file(
         None => return HttpResponse::BadRequest().body("Missing X-HMAC header"),
     };
 
+    // Extract the X-SIGNING-KEY header
+    let signing_key = match req.headers().get("X-SIGNING-KEY") {
+        Some(value) => value.to_str().unwrap_or_default(),
+        None => return HttpResponse::BadRequest().body("Missing X-SIGNING-KEY header"),
+    };
+
     let file_map = data.file_map.lock().unwrap();
 
     if let Some(file_name) = file_map.get(&path.into_inner()) {
@@ -103,7 +114,7 @@ async fn get_file(
         }
 
         // Compute the HMAC for the file content
-        let mut mac = HmacSha256::new_from_slice(data.secret_key.as_bytes())
+        let mut mac = HmacSha256::new_from_slice(signing_key.as_bytes())
             .expect("HMAC can take key of any size");
         mac.update(&buffer);
         let result_hmac = encode(mac.finalize().into_bytes());
@@ -125,7 +136,7 @@ async fn get_file(
 fn verify_hmac(
     hmac_header: &str,
     file_bytes: &[u8],
-    secret_key: &[u8],
+    signing_key: &[u8],
 ) -> Result<(), HttpResponse> {
     // Decode the hex HMAC
     let received_hmac = match decode(hmac_header) {
@@ -134,7 +145,7 @@ fn verify_hmac(
     };
 
     // Create an instance of the HMAC-SHA256
-    let mut mac = HmacSha256::new_from_slice(secret_key).expect("Insufficient HMAC key size");
+    let mut mac = HmacSha256::new_from_slice(signing_key).expect("Insufficient HMAC key size");
 
     // Input the data to the HMAC instance
     mac.update(file_bytes);
@@ -149,11 +160,9 @@ fn verify_hmac(
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("uploads").unwrap();
-    let secret_key = std::env::var("SECRET_KEY").unwrap();
 
     let app_state = web::Data::new(AppState {
         file_map: Mutex::new(HashMap::new()),
-        secret_key,
     });
 
     HttpServer::new(move || {
@@ -173,12 +182,12 @@ mod tests {
     use actix_web::test;
     use tempfile::tempdir;
 
-    const SECRET_KEY: &[u8] = b"TEST_SECRET_KEY";
+    const SIGNING_KEY: &[u8] = b"TEST_SECRET_KEY";
 
     // Test helper function to create a HMAC signature
-    fn create_hmac_signature(secret_key: &[u8], data: &[u8]) -> String {
+    fn create_hmac_signature(signing_key: &[u8], data: &[u8]) -> String {
         let mut mac =
-            Hmac::<Sha256>::new_from_slice(secret_key).expect("HMAC can take key of any size");
+            Hmac::<Sha256>::new_from_slice(signing_key).expect("HMAC can take key of any size");
         mac.update(data);
         encode(mac.finalize().into_bytes())
     }
@@ -188,14 +197,14 @@ mod tests {
     async fn test_hmac_verification() {
         // Test valid HMAC passes as Ok(())
         let correct_payload = b"correct payload";
-        let correct_hmac = create_hmac_signature(SECRET_KEY, correct_payload);
-        let verify_correct = verify_hmac(&correct_hmac, correct_payload, SECRET_KEY);
+        let correct_hmac = create_hmac_signature(SIGNING_KEY, correct_payload);
+        let verify_correct = verify_hmac(&correct_hmac, correct_payload, SIGNING_KEY);
 
         assert!(verify_correct.is_ok(), "Should succeed with correct HMAC");
 
         // Test invvalid HMAC returns an HttpResponse())
         let incorrect_payload = b"incorrect payload";
-        let verify_incorrect = verify_hmac(&correct_hmac, incorrect_payload, SECRET_KEY);
+        let verify_incorrect = verify_hmac(&correct_hmac, incorrect_payload, SIGNING_KEY);
         assert!(verify_incorrect.is_err());
     }
 
@@ -203,7 +212,6 @@ mod tests {
     async fn test_upload_file() {
         // Set up application state
         let data = web::Data::new(AppState {
-            secret_key: std::str::from_utf8(SECRET_KEY).unwrap().to_string(),
             file_map: Mutex::new(HashMap::new()),
         });
 
@@ -226,7 +234,7 @@ mod tests {
         );
 
         let correct_payload = b"correct payload";
-        let correct_hmac = create_hmac_signature(SECRET_KEY, correct_payload);
+        let correct_hmac = create_hmac_signature(SIGNING_KEY, correct_payload);
 
         let req = test::TestRequest::post()
             .uri("/upload")
@@ -249,12 +257,13 @@ mod tests {
     async fn test_get_file() {
         // Set up application state
         let data = web::Data::new(AppState {
-            secret_key: std::str::from_utf8(SECRET_KEY).unwrap().to_string(),
             file_map: Mutex::new(HashMap::new()),
         });
+        // and the secret key
+        let signing_key = std::str::from_utf8(SIGNING_KEY).unwrap().to_string();
 
         let file_contents = b"this too shall pass!"; // Simulated file contents
-        let correct_hmac = create_hmac_signature(SECRET_KEY, file_contents);
+        let correct_hmac = create_hmac_signature(SIGNING_KEY, file_contents);
         let incorrect_hmac = String::from("none shall pass");
 
         let temp_dir = tempdir().unwrap();
@@ -284,6 +293,7 @@ mod tests {
         let req = test::TestRequest::get()
             .uri(&format!("/files/{file_id}"))
             .insert_header(("X-HMAC", correct_hmac))
+            .insert_header(("X-SIGNING-KEY", signing_key))
             .to_request();
 
         let resp = test::call_service(&app, req).await;
