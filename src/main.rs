@@ -126,12 +126,14 @@ fn verify_hmac(
 async fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("uploads").unwrap();
 
+    let host = "0.0.0.0:5558";
+    println!("Starting server at: {}", host);
     HttpServer::new(move || {
         App::new()
             .service(web::resource("/upload").route(web::post().to(upload_file)))
             .service(web::resource("/files/{id}").route(web::get().to(get_file)))
     })
-    .bind("0.0.0.0:5558")?
+    .bind(host)?
     .run()
     .await
 }
