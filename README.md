@@ -5,6 +5,8 @@ A simple, asynchronous file server provided as an example to support XMTP Messag
 Running this server allows XMTP service providers to provide the ability for users to securely upload message history bundles via a `POST` request and retrieve them via a `GET` request from another authorized app or device, using a unique ID assigned upon upload.   
 It is expected that these uploaded bundles should be: encrypted, short-lived, non-guessable, with scoped access to only authorized parties.
 
+![Message History Diagram](./MessageHistory.svg)
+
 ## Getting Started
 
 ### Prerequisites
