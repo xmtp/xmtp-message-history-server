@@ -46,7 +46,7 @@ jobs:
           terraform-token: ${{ secrets.TERRAFORM_TOKEN }}
           terraform-org: xmtp
           terraform-workspace: dev
-          variable-name: validation_service_image
+          variable-name: message_history_server_image
           variable-value: "ghcr.io/xmtp/message-history-server@${{ steps.push.outputs.digest }}"
           variable-value-required-prefix: "ghcr.io/xmtp/message-history-server@sha256:"
 
