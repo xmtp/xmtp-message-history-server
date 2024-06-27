@@ -122,6 +122,11 @@ fn verify_hmac(
     }
 }
 
+
+async fn health_check() -> impl Responder {
+    HttpResponse::Ok().finish()
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     std::fs::create_dir_all("uploads").unwrap();
@@ -130,6 +135,7 @@ async fn main() -> std::io::Result<()> {
     println!("Starting server at: {}", host);
     HttpServer::new(move || {
         App::new()
+            .route("/", web::get().to(health_check))
             .service(web::resource("/upload").route(web::post().to(upload_file)))
             .service(web::resource("/files/{id}").route(web::get().to(get_file)))
     })
