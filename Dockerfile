@@ -5,6 +5,6 @@ RUN cargo build --release
 
 FROM debian:bullseye-slim
 RUN apt-get update && apt-get install 
-COPY --from=builder /code/target/release/xmtp-message-history-server /usr/local/bin/xmtp-message-history-server
+COPY --from=builder /code/target/release/xmtp-message-history-server /var/apps/ 
 ENV RUST_LOG=info
-CMD ["xmtp-message-history-server"]
+CMD ["/var/apps/xmtp-message-history-server"]
