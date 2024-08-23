@@ -14,11 +14,11 @@ jobs:
       contents: read
       packages: write
     steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Log in to the Container registry
-        uses: docker/login-action@v1
+        uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
@@ -26,12 +26,12 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v3
+        uses: docker/metadata-action@v5
         with:
           images: ghcr.io/xmtp/message-history-server
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         id: push
         with:
           context: .
@@ -49,4 +49,3 @@ jobs:
           variable-name: message_history_server_docker_image
           variable-value: "ghcr.io/xmtp/message-history-server@${{ steps.push.outputs.digest }}"
           variable-value-required-prefix: "ghcr.io/xmtp/message-history-server@sha256:"
-
