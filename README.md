@@ -20,7 +20,7 @@ Rust and Cargo can be installed from [https://rustup.rs](https://rustup.rs).
 
 Node is required to run the example client scripts.
 
-Please make sure you have a compatible version as specified in `package.json`. We recommend using a Node version manager such as [nvm](https://github.com/nvm-sh/nvm) or [nodenv](https://github.com/nodenv/nodenv).
+Please make sure you have a compatible version as specified in `examples/.node-version`. We recommend using a Node version manager such as [nvm](https://github.com/nvm-sh/nvm) or [nodenv](https://github.com/nodenv/nodenv).
 
 ### Install
 
