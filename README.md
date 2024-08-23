@@ -1,108 +1,103 @@
 # XMTP Message History Server
 
-A simple, asynchronous file server provided as an example to support XMTP Message History transfers. 
+A simple, asynchronous file server provided as an example to support XMTP Message History transfers.
 
-Running this server allows XMTP service providers to provide the ability for users to securely upload message history bundles via a `POST` request and retrieve them via a `GET` request from another authorized app or device, using a unique ID assigned upon upload.   
-It is expected that these uploaded bundles should be: encrypted, short-lived, non-guessable, with scoped access to only authorized parties.
+Running this server allows XMTP service providers to provide the ability for users to securely upload message history bundles via a `POST` request and retrieve them via a `GET` request from another authorized app or device, using a unique ID assigned upon upload.
+
+It is expected that these uploaded bundles should be: encrypted, short-lived, and non-guessable.
 
 ![Message History Diagram](./MessageHistory.svg)
 
-## Getting Started
+## Getting started
 
 ### Prerequisites
 
-Ensure you have the following installed:
+#### Rust
 
-- Rust and Cargo. You can install them both from [https://rustup.rs](https://rustup.rs)
-- To run the scripts in the [`examples/`](./examples/) folder, ensure python is correctly installed on your system.
+Rust and Cargo can be installed from [https://rustup.rs](https://rustup.rs).
 
-### Installing
+#### Node
+
+Node is required to run the example client scripts.
+
+Please make sure you have a compatible version as specified in `examples/.node-version`. We recommend using a Node version manager such as [nvm](https://github.com/nvm-sh/nvm) or [nodenv](https://github.com/nodenv/nodenv).
+
+### Install
 
 Clone the repository to your local machine:
 
-    git clone https://github.com/xmtp/xmtp-message-history-server.git
-    cd xmtp-message-history-server
+```bash
+git clone https://github.com/xmtp/xmtp-message-history-server.git
+cd xmtp-message-history-server
+```
 
 Build the project:
 
-    cargo build
+```bash
+cargo build
+```
 
 Run the server:
 
-    cargo run
+```bash
+cargo run
+```
 
 The server will start running on http://0.0.0.0:5558.
 
 ## Usage
 
-Set the `AES_KEY` and `SIGNING_KEY` environment variables.
+### Upload a file
 
-    export AES_KEY=only-authorized-installations-should-share-this-key
-    export SIGNING_KEY=used-to-sign-the-message-bundle
-
-### Uploading a File
-
-To upload a file, send a POST request to http://0.0.0.0:5558/upload with the file data in the request body.  
+To upload a file, send a POST request to http://0.0.0.0:5558/upload with the file data in the request body.
 
 The server will return a unique ID for the uploaded file.
 
-Example using curl:
+Example using cURL:
 
-    curl -X POST http://0.0.0.0:5558/upload
-    -F "file=@path/to/your/message_bundle.aes"
+```bash
+curl -X POST http://0.0.0.0:5558/upload --data "@./examples/test_file.txt"
+```
 
-### Retrieving a File
-
-To retrieve an uploaded file, you must possess the `HMAC_SIGNATURE` and `SIGNING_KEY` of the message_bundle.
-
-The request must include 
-
-- an `X-HMAC` header using `SHA256` as the hashing algorithm.
-- an `X-SIGNING-KEY` header set to the `SIGNING_KEY`
-
+### Retrieve a file
 
 Send a GET request to http://0.0.0.0:5558/files/{id}, where {id} is the unique ID returned by the server during the upload.
 
-Example using curl:
+Example using cURL:
 
-    curl http://0.0.0.0:5558/files/{id} 
-    -H "X-HMAC: <HMAC_VALUE_OF_FILE_SIGNED_WITH_SIGNING_KEY>"
-    -H "X-SIGNING-KEY: <KEY_THAT_SIGNED_THE_BUNDLE>" 
-    --output retrieved_file.aes
+```bash
+curl http://0.0.0.0:5558/files/{id} --output test_file.txt
+```
 
-### Decrypting a File
+### Example
 
-To decrypt the downloaded file, you must possess the `AES_KEY` that was used to encrypt the message_bundle.
+An example set of Node scripts are available in the `examples/` folder demonstrating the upload and download of a file.
 
-### Example Reference Client  
+#### Upload file
 
-An example set of python scripts are available in the `examples/` folder demonstrating the full roundtrip of:
-- encrypting, signing, uploading in `upload-bundle.py`
-- authenticating (using the hmac key), downloading, and decrypting in `fetch-bundle.py` 
+```bash
+node upload.js
+```
 
-Set up a virtual environment
+This script will output the bundle ID, which can be used to download the file.
 
-    python3 -m venv myenv
-    source myenv/bin/activate
+Example output:
 
-Install the dependencies
+```
+Uploading file test_file.txt with content: Hello, world!
+File uploaded successfully
+Bundle ID: aabbc983-0f0e-4fc8-911f-d4e669e48237
+Run "BUNDLE_ID=aabbc983-0f0e-4fc8-911f-d4e669e48237 node download.js" to download the file
+```
 
-    pip3 install -r requirements.txt
+#### Download file
 
-Run the uploader script
+Using the bundle ID from the previous step:
 
-    python3 upload-bundle.py
-
-Fetch the uploaded file 
-
-    # export BUNDLE_ID=<bundle-id-from-upload-bundle-response>
-    # export HMAC_VALUE=<hmac-value-from-upload-bundle-response>
-    python3 fetch-bundle.py
+```bash
+BUNDLE_ID=aabbc983-0f0e-4fc8-911f-d4e669e48237 node download.js
+```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a pull request or open an issue.
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+See our [contribution guide](./CONTRIBUTING.md) to learn more about contributing to this project.
