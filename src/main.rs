@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::{Read, Write};
 use std::path::PathBuf;
 
+use actix_cors::Cors;
 use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use futures::StreamExt;
@@ -78,7 +79,14 @@ async fn main() -> std::io::Result<()> {
     let host = "0.0.0.0:5558";
     println!("Starting server at: {}", host);
     HttpServer::new(move || {
+        let cors = Cors::default()
+            .allow_any_origin()
+            .allow_any_method()
+            .allow_any_header()
+            .max_age(3600);
+
         App::new()
+            .wrap(cors)
             .route("/", web::get().to(health_check))
             .service(web::resource("/upload").route(web::post().to(upload_file)))
             .service(web::resource("/files/{id}").route(web::get().to(get_file)))
