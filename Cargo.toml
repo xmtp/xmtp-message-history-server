@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.9.0"
+actix-cors = "0.6.5"
 futures = "0.3.30"
 uuid = { version = "1.10.0", features = ["v4", "serde"] }
 
