@@ -3,13 +3,14 @@ use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use anyhow::Result;
 use futures::StreamExt;
-use std::fs::File;
-use std::io::{Read, Write};
 use std::path::PathBuf;
+use tokio::fs::File;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use uuid::Uuid;
 
 mod cleanup;
 
+const FILESIZE_LIMIT: usize = 15_000_000;
 const UPLOAD_DIR: &str = "uploads";
 
 async fn upload_file(_req: HttpRequest, mut payload: web::Payload) -> impl Responder {
@@ -33,15 +34,25 @@ async fn upload_file(_req: HttpRequest, mut payload: web::Payload) -> impl Respo
     }
 
     // Try to create the file.
-    let mut file = match File::create(&file_name) {
+    let mut file = match File::create(&file_name).await {
         Ok(file) => file,
         Err(_) => return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR),
     };
 
     // Write payload to file.
+    let mut size = 0;
     while let Some(chunk) = payload.next().await {
         let data = chunk.unwrap();
-        if file.write_all(&data).is_err() {
+
+        size += data.len();
+        if size > FILESIZE_LIMIT {
+            // File is too large. Delete it and return an error.
+            drop(file);
+            let _ = tokio::fs::remove_file(&file_name).await;
+            return HttpResponse::new(StatusCode::BAD_REQUEST);
+        }
+
+        if file.write_all(&data).await.is_err() {
             return HttpResponse::new(StatusCode::INTERNAL_SERVER_ERROR);
         }
     }
@@ -55,12 +66,12 @@ async fn get_file(_req: HttpRequest, path: web::Path<Uuid>) -> impl Responder {
 
     if file_path.exists() {
         // Read the file's content
-        let mut file = match File::open(file_path) {
+        let mut file = match File::open(file_path).await {
             Ok(f) => f,
             Err(_) => return HttpResponse::NotFound().body("File not found"),
         };
         let mut buffer = Vec::new();
-        if file.read_to_end(&mut buffer).is_err() {
+        if file.read_to_end(&mut buffer).await.is_err() {
             return HttpResponse::InternalServerError().body("Failed to read file");
         }
 
@@ -127,6 +138,8 @@ mod tests {
 
     #[actix_web::test]
     async fn test_upload_file() {
+        init_tracing().unwrap();
+
         let app =
             test::init_service(App::new().route("/upload", web::post().to(upload_file))).await;
 
@@ -143,6 +156,15 @@ mod tests {
         let body = resp.into_body();
         let bytes = body::to_bytes(body).await.unwrap();
         assert!(Uuid::try_parse_ascii(&bytes).is_ok());
+
+        let too_large = vec![0u8; 20_000_000];
+        let req = test::TestRequest::post()
+            .uri("/upload")
+            .set_payload(too_large)
+            .to_request();
+
+        let resp = test::call_service(&app, req).await;
+        assert_eq!(resp.status(), 400);
     }
 
     #[actix_web::test]
@@ -154,7 +176,7 @@ mod tests {
 
         let file_id = Uuid::new_v4();
         let file_name = Path::new(uploads_path).join(file_id.to_string());
-        let mut file = File::create(&file_name).unwrap();
+        let mut file = File::create(&file_name).await.unwrap();
         let _ = file.write_all(file_contents);
 
         let app = test::init_service(
