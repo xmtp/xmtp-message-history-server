@@ -1,12 +1,16 @@
-use std::fs::File;
-use std::io::{Read, Write};
-use std::path::PathBuf;
-
 use actix_cors::Cors;
 use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
+use anyhow::Result;
 use futures::StreamExt;
+use std::fs::File;
+use std::io::{Read, Write};
+use std::path::PathBuf;
 use uuid::Uuid;
+
+mod cleanup;
+
+const UPLOAD_DIR: &str = "uploads";
 
 async fn upload_file(_req: HttpRequest, mut payload: web::Payload) -> impl Responder {
     // Create a new UUID for the file.
@@ -15,7 +19,7 @@ async fn upload_file(_req: HttpRequest, mut payload: web::Payload) -> impl Respo
 
     #[cfg(not(test))]
     {
-        file_name = format!("uploads/{}", file_id)
+        file_name = format!("{UPLOAD_DIR}/{file_id}");
     }
 
     #[cfg(test)]
@@ -72,9 +76,13 @@ async fn health_check() -> impl Responder {
     HttpResponse::Ok().finish()
 }
 
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
-    std::fs::create_dir_all("uploads").unwrap();
+#[tokio::main]
+async fn main() -> Result<()> {
+    init_tracing()?;
+    std::fs::create_dir_all("uploads")?;
+
+    #[cfg(not(test))]
+    cleanup::spawn_worker();
 
     let host = "0.0.0.0:5558";
     println!("Starting server at: {}", host);
@@ -93,7 +101,21 @@ async fn main() -> std::io::Result<()> {
     })
     .bind(host)?
     .run()
-    .await
+    .await?;
+
+    Ok(())
+}
+
+fn init_tracing() -> Result<()> {
+    let subscriber = tracing_subscriber::fmt()
+        .compact()
+        .with_file(true)
+        .with_line_number(true)
+        .with_thread_ids(true)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber)?;
+
+    Ok(())
 }
 
 #[cfg(test)]
