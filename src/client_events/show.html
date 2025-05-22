@@ -14,14 +14,6 @@
             type="text/css"
         />
         <link rel="stylesheet" type="text/css" href="styles.css" />
-        <style type="text/css">
-            #visualization {
-                background: white;
-                width: 600px;
-                height: 400px;
-                border: 1px solid lightgray;
-            }
-        </style>
     </head>
     <body>
         <!-- Floating particles -->
@@ -35,18 +27,31 @@
         <div class="particle"></div>
         <div class="particle"></div>
 
+        <div id="extra-info-container">
+            <pre id="extra-info"></pre>
+        </div>
+
         <div id="visualization"></div>
 
         <script type="text/javascript">
             var container = document.getElementById("visualization");
 
-            var items = new vis.DataSet(thedatagoeshere);
+            var items = new vis.DataSet({ itemdata });
+            var groups = { groupdata };
 
             // Configuration for the Timeline
-            var options = {};
+            var options = { xss: { disabled: true } };
 
             // Create a Timeline
-            var timeline = new vis.Timeline(container, items, options);
+            var timeline = new vis.Timeline(container, items, groups, options);
+
+            function appendToElement(elementId, textToAppend) {
+                const targetElement = document.getElementById(elementId);
+                console.log("yes");
+                if (targetElement) {
+                    targetElement.textContent = atob(textToAppend);
+                }
+            }
         </script>
     </body>
 </html>

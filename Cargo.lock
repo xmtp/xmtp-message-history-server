@@ -4416,9 +4416,9 @@ dependencies = [
 
 [[package]]
 name = "rustversion"
-version = "1.0.20"
+version = "1.0.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eded382c5f5f786b989652c49544c4877d9f015cc22e145a5ea8ea66c2921cd2"
+checksum = "8a0d197bd2c9dc6e53b84da9556a69ba4cdfab8619eb41a8bd1cc2027a0f6b1d"
 
 [[package]]
 name = "ryu"
@@ -6212,6 +6212,7 @@ dependencies = [
  "actix-cors",
  "actix-web",
  "anyhow",
+ "base64 0.22.1",
  "filetime",
  "futures",
  "hex",
@@ -6230,7 +6231,7 @@ dependencies = [
 [[package]]
 name = "xmtp_api"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "async-trait",
  "futures",
@@ -6245,7 +6246,7 @@ dependencies = [
 [[package]]
 name = "xmtp_api_grpc"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "async-trait",
  "futures",
@@ -6262,7 +6263,7 @@ dependencies = [
 [[package]]
 name = "xmtp_archive"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "aes-gcm",
  "async-compression",
@@ -6289,7 +6290,7 @@ dependencies = [
 [[package]]
 name = "xmtp_common"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "async-trait",
  "bytes",
@@ -6322,7 +6323,7 @@ dependencies = [
 [[package]]
 name = "xmtp_content_types"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "prost",
  "serde",
@@ -6337,7 +6338,7 @@ dependencies = [
 [[package]]
 name = "xmtp_cryptography"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "curve25519-dalek",
  "ecdsa",
@@ -6365,7 +6366,7 @@ dependencies = [
 [[package]]
 name = "xmtp_db"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "bincode",
  "ctor",
@@ -6399,7 +6400,7 @@ dependencies = [
 [[package]]
 name = "xmtp_id"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -6433,7 +6434,7 @@ dependencies = [
 [[package]]
 name = "xmtp_macro"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6443,10 +6444,11 @@ dependencies = [
 [[package]]
 name = "xmtp_mls_common"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "openmls",
  "prost",
+ "serde",
  "thiserror 2.0.12",
  "xmtp_common",
  "xmtp_db",
@@ -6457,7 +6459,7 @@ dependencies = [
 [[package]]
 name = "xmtp_proto"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b732da2cdd4d4ff70d92ce38f8fa2193e514da57"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
 dependencies = [
  "async-trait",
  "derive_builder",

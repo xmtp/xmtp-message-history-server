@@ -2,6 +2,7 @@ use actix_cors::Cors;
 use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use anyhow::Result;
+use client_events::render_event_card;
 use futures::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
@@ -11,10 +12,10 @@ use uuid::Uuid;
 use xmtp_archive::ArchiveImporter;
 use xmtp_db::client_events::ClientEvent;
 use xmtp_proto::xmtp::device_sync::backup_element::Element;
-use xmtp_proto::xmtp::device_sync::client_event_backup::ClientEventSave;
 use xmtp_proto::xmtp::device_sync::BackupElement;
 
 mod cleanup;
+mod client_events;
 
 const FILESIZE_LIMIT: usize = 15_000_000;
 const UPLOAD_DIR: &str = "uploads";
@@ -89,12 +90,12 @@ async fn get_file(_req: HttpRequest, path: web::Path<Uuid>) -> impl Responder {
     }
 }
 
-async fn key_form(req: HttpRequest) -> impl Responder {
+async fn key_form(_req: HttpRequest) -> impl Responder {
     let page = include_str!("client_events/index.html");
     HttpResponse::Ok().content_type("text/html").body(page)
 }
 
-async fn styles(req: HttpRequest) -> impl Responder {
+async fn styles(_req: HttpRequest) -> impl Responder {
     let styles = include_str!("client_events/styles.css");
     HttpResponse::Ok().content_type("text/css").body(styles)
 }
@@ -109,61 +110,88 @@ struct Event {
     id: usize,
     content: String,
     start: i64,
+    group: String,
+    #[serde(rename = "className")]
+    class_name: String,
+}
+#[derive(Serialize, Deserialize)]
+struct Group {
+    id: String,
+    content: String,
 }
 
 async fn client_events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -> impl Responder {
-    tracing::info!("a");
     let mut split = form_data.key.split(":");
     let Some(file_id) = split.nth(0) else {
         return HttpResponse::NotAcceptable().finish();
     };
-    tracing::info!("b");
     let Some(key) = split.nth(0) else {
         return HttpResponse::NotAcceptable().finish();
     };
-    tracing::info!("c");
     let Ok(key) = hex::decode(key) else {
         return HttpResponse::InternalServerError().body("Failed to decode key");
     };
-    tracing::info!("d");
 
     let file_path: PathBuf = format!("uploads/{file_id}").into();
     let mut importer = ArchiveImporter::from_file(&file_path, &key).await.unwrap();
 
     let mut events = vec![];
+    let mut groups = vec![Group {
+        content: "Global".to_string(),
+        id: "Global".to_string(),
+    }];
 
     let mut i = 0;
     while let Some(Ok(element)) = importer.next().await {
         let BackupElement {
-            element:
-                Some(Element::ClientEvent(ClientEventSave {
-                    created_at_ns,
-                    details,
-                })),
+            element: Some(element),
         } = element
         else {
             continue;
         };
 
-        let Ok(event) = serde_json::from_slice::<ClientEvent>(&details) else {
+        let event_save = match element {
+            Element::ClientEvent(event) => event,
+            Element::Group(group_save) => {
+                let mut attributes = group_save
+                    .mutable_metadata
+                    .map(|m| m.attributes)
+                    .unwrap_or_default();
+                let name = attributes.remove("group_name").unwrap_or_default();
+                let id = hex::encode(&group_save.id);
+
+                groups.push(Group {
+                    id: id.clone(),
+                    content: format!("{id}<br />{name}"),
+                });
+                continue;
+            }
+            _ => continue,
+        };
+
+        let Ok(event) = serde_json::from_slice::<ClientEvent>(&event_save.details) else {
             continue;
         };
-        let content = match event {
-            ClientEvent::ClientBuild => "Client Created".to_string(),
-            ClientEvent::QueueIntent(intent) => "Intent queued".to_string(),
-            ClientEvent::WelcomedIntoGroup(welcome) => "Welcomed into group".to_string(),
+        let content = render_event_card(event);
+
+        let group = match event_save.group_id {
+            Some(group_id) => hex::encode(group_id),
+            _ => "Global".to_string(),
         };
 
         events.push(Event {
             id: i,
-            start: created_at_ns / 1000000,
+            start: event_save.created_at_ns / 1000000,
             content,
+            group,
+            class_name: format!("blech"),
         });
         i += 1;
     }
 
     let page = include_str!("client_events/show.html");
-    let page = page.replace("thedatagoeshere", &serde_json::to_string(&events).unwrap());
+    let page = page.replace(r#"{ itemdata }"#, &serde_json::to_string(&events).unwrap());
+    let page = page.replace(r#"{ groupdata }"#, &serde_json::to_string(&groups).unwrap());
     HttpResponse::Ok().content_type("text/html").body(page)
 }
 
