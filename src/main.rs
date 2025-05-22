@@ -3,10 +3,16 @@ use actix_web::http::StatusCode;
 use actix_web::{web, App, HttpRequest, HttpResponse, HttpServer, Responder};
 use anyhow::Result;
 use futures::StreamExt;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use uuid::Uuid;
+use xmtp_archive::ArchiveImporter;
+use xmtp_db::client_events::ClientEvent;
+use xmtp_proto::xmtp::device_sync::backup_element::Element;
+use xmtp_proto::xmtp::device_sync::client_event_backup::ClientEventSave;
+use xmtp_proto::xmtp::device_sync::BackupElement;
 
 mod cleanup;
 
@@ -83,6 +89,84 @@ async fn get_file(_req: HttpRequest, path: web::Path<Uuid>) -> impl Responder {
     }
 }
 
+async fn key_form(req: HttpRequest) -> impl Responder {
+    let page = include_str!("client_events/index.html");
+    HttpResponse::Ok().content_type("text/html").body(page)
+}
+
+async fn styles(req: HttpRequest) -> impl Responder {
+    let styles = include_str!("client_events/styles.css");
+    HttpResponse::Ok().content_type("text/css").body(styles)
+}
+
+#[derive(Serialize, Deserialize)]
+struct CheckKeyForm {
+    key: String,
+}
+
+#[derive(Serialize, Deserialize)]
+struct Event {
+    id: usize,
+    content: String,
+    start: i64,
+}
+
+async fn client_events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -> impl Responder {
+    tracing::info!("a");
+    let mut split = form_data.key.split(":");
+    let Some(file_id) = split.nth(0) else {
+        return HttpResponse::NotAcceptable().finish();
+    };
+    tracing::info!("b");
+    let Some(key) = split.nth(0) else {
+        return HttpResponse::NotAcceptable().finish();
+    };
+    tracing::info!("c");
+    let Ok(key) = hex::decode(key) else {
+        return HttpResponse::InternalServerError().body("Failed to decode key");
+    };
+    tracing::info!("d");
+
+    let file_path: PathBuf = format!("uploads/{file_id}").into();
+    let mut importer = ArchiveImporter::from_file(&file_path, &key).await.unwrap();
+
+    let mut events = vec![];
+
+    let mut i = 0;
+    while let Some(Ok(element)) = importer.next().await {
+        let BackupElement {
+            element:
+                Some(Element::ClientEvent(ClientEventSave {
+                    created_at_ns,
+                    details,
+                })),
+        } = element
+        else {
+            continue;
+        };
+
+        let Ok(event) = serde_json::from_slice::<ClientEvent>(&details) else {
+            continue;
+        };
+        let content = match event {
+            ClientEvent::ClientBuild => "Client Created".to_string(),
+            ClientEvent::QueueIntent(intent) => "Intent queued".to_string(),
+            ClientEvent::WelcomedIntoGroup(welcome) => "Welcomed into group".to_string(),
+        };
+
+        events.push(Event {
+            id: i,
+            start: created_at_ns / 1000000,
+            content,
+        });
+        i += 1;
+    }
+
+    let page = include_str!("client_events/show.html");
+    let page = page.replace("thedatagoeshere", &serde_json::to_string(&events).unwrap());
+    HttpResponse::Ok().content_type("text/html").body(page)
+}
+
 async fn health_check() -> impl Responder {
     HttpResponse::Ok().finish()
 }
@@ -95,7 +179,7 @@ async fn main() -> Result<()> {
     #[cfg(not(test))]
     cleanup::spawn_worker();
 
-    let host = "0.0.0.0:5558";
+    let host = "0.0.0.0:5559";
     println!("Starting server at: {}", host);
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -109,6 +193,9 @@ async fn main() -> Result<()> {
             .route("/", web::get().to(health_check))
             .service(web::resource("/upload").route(web::post().to(upload_file)))
             .service(web::resource("/files/{id}").route(web::get().to(get_file)))
+            .service(web::resource("/key").route(web::get().to(key_form)))
+            .service(web::resource("/client-events").route(web::get().to(client_events)))
+            .service(web::resource("/styles.css").route(web::get().to(styles)))
     })
     .bind(host)?
     .run()

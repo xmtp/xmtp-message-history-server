@@ -34,8 +34,8 @@ fn cleanup() -> Result<()> {
         let modified = metadata.modified()?;
         let age = now.duration_since(modified)?;
 
-        // Is the file less than a day old?
-        if age < Duration::from_secs(60 * 60 * 24) {
+        // Is the file less than a week old?
+        if age < Duration::from_secs(60 * 60 * 24 * 7) {
             continue;
         }
 
