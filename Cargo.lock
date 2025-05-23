@@ -873,6 +873,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6245d59a3e82a7fc217c5828a6692dbc6dfb63a0c8c90495621f7b9d79704a0e"
 
 [[package]]
+name = "convert_case"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "baaaa0ecca5b51987b9423ccdc971514dd8b0bb7b4060b983d3664dad3f1f89f"
+dependencies = [
+ "unicode-segmentation",
+]
+
+[[package]]
 name = "cookie"
 version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1139,7 +1148,7 @@ version = "0.99.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6edb4b64a43d977b8e99788fe3a04d483834fba1215a7e02caa415b626497f7f"
 dependencies = [
- "convert_case",
+ "convert_case 0.4.0",
  "proc-macro2",
  "quote",
  "rustc_version",
@@ -5534,6 +5543,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
 
 [[package]]
+name = "unicode-segmentation"
+version = "1.12.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6ccf251212114b54433ec949fd6a7841275f9ada20dddd2f29e9ceea4501493"
+
+[[package]]
 name = "unicode-xid"
 version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5597,12 +5612,14 @@ dependencies = [
 
 [[package]]
 name = "uuid"
-version = "1.16.0"
+version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "458f7a779bf54acc9f347480ac654f68407d3aab21269a6e3c9f922acd9e2da9"
+checksum = "3cf4199d1e5d15ddd86a694e4d0dffa9c323ce759fea589f00fef9d81cc1931d"
 dependencies = [
  "getrandom 0.3.3",
+ "js-sys",
  "serde",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -6213,6 +6230,7 @@ dependencies = [
  "actix-web",
  "anyhow",
  "base64 0.22.1",
+ "convert_case 0.8.0",
  "filetime",
  "futures",
  "hex",
@@ -6222,7 +6240,7 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-subscriber",
- "uuid 1.16.0",
+ "uuid 1.17.0",
  "xmtp_archive",
  "xmtp_db",
  "xmtp_proto",
@@ -6231,7 +6249,7 @@ dependencies = [
 [[package]]
 name = "xmtp_api"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "async-trait",
  "futures",
@@ -6246,7 +6264,7 @@ dependencies = [
 [[package]]
 name = "xmtp_api_grpc"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "async-trait",
  "futures",
@@ -6263,7 +6281,7 @@ dependencies = [
 [[package]]
 name = "xmtp_archive"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "aes-gcm",
  "async-compression",
@@ -6290,7 +6308,7 @@ dependencies = [
 [[package]]
 name = "xmtp_common"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "async-trait",
  "bytes",
@@ -6323,7 +6341,7 @@ dependencies = [
 [[package]]
 name = "xmtp_content_types"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "prost",
  "serde",
@@ -6338,7 +6356,7 @@ dependencies = [
 [[package]]
 name = "xmtp_cryptography"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "curve25519-dalek",
  "ecdsa",
@@ -6366,7 +6384,7 @@ dependencies = [
 [[package]]
 name = "xmtp_db"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "bincode",
  "ctor",
@@ -6400,7 +6418,7 @@ dependencies = [
 [[package]]
 name = "xmtp_id"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -6434,7 +6452,7 @@ dependencies = [
 [[package]]
 name = "xmtp_macro"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6444,7 +6462,7 @@ dependencies = [
 [[package]]
 name = "xmtp_mls_common"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "openmls",
  "prost",
@@ -6459,7 +6477,7 @@ dependencies = [
 [[package]]
 name = "xmtp_proto"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#1d199b245f52be9d1c2e68800d0e8e1ab2fc27c1"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
 dependencies = [
  "async-trait",
  "derive_builder",

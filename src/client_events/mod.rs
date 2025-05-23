@@ -1,8 +1,5 @@
 use base64::{prelude::BASE64_STANDARD, Engine};
-use xmtp_db::{
-    client_events::{ClientEvent, EvtQueueIntent},
-    group_intent::IntentKind,
-};
+use xmtp_db::{client_events::Details, group_intent::IntentKind};
 
 const CARD_HTML: &str = include_str!("_card.html");
 const METRIC_HTML: &str = include_str!("_metric.html");
@@ -24,8 +21,30 @@ struct Metric {
     extra_info: Option<String>,
 }
 
-pub fn render_event_card(event: ClientEvent) -> String {
-    let card: Card = event.into();
+const TITLE_ICONS: &[(&str, &str)] = &[
+    ("ClientBuild", "🏗️"),
+    ("MsgStreamConnect", "🚣‍♀️"),
+    ("GroupWelcome", "🤗"),
+    ("EpochChange", "🔼"),
+    ("QueueIntent", "🏁"),
+];
+
+pub fn render_event_card(event: String, details: &[u8]) -> String {
+    let event = event.replace("\"", "");
+    let title = event.to_case(Case::Title).to_uppercase();
+    let icon = TITLE_ICONS.iter().find(|(n, _)| n == &event).map(|e| e.1);
+    let metrics = if let Ok(details) = serde_json::from_slice::<Details>(details) {
+        details_to_metrics(details)
+    } else {
+        vec![]
+    };
+
+    let card = Card {
+        icon,
+        title,
+        metrics,
+    };
+
     let metrics = card
         .metrics
         .into_iter()
@@ -52,65 +71,65 @@ pub fn render_event_card(event: ClientEvent) -> String {
         .replace("{ metrics }", &metrics)
 }
 
-impl From<ClientEvent> for Card {
-    fn from(evt: ClientEvent) -> Self {
-        match evt {
-            ClientEvent::Generic(title) => Self {
-                icon: Some("G"),
-                title,
+use convert_case::{Case, Casing};
+
+fn details_to_metrics(details: Details) -> Vec<Metric> {
+    match details {
+        Details::EpochChange {
+            new_epoch,
+            prev_epoch,
+            validated_commit,
+            ..
+        } => vec![Metric {
+            icon: "E",
+            title: "Epoch",
+            value: format!("{}", new_epoch),
+            from: Some(format!("{}", prev_epoch)),
+            extra_info: validated_commit,
+        }],
+        Details::GroupWelcome {
+            conversation_type,
+            added_by_inbox_id,
+        } => vec![
+            Metric {
+                icon: "T",
+                title: "Conversation Type",
+                value: format!("{:?}", conversation_type),
                 ..Default::default()
             },
-            ClientEvent::ClientBuild => Self {
-                icon: Some("🏗️"),
-                title: "Client Build".to_string(),
+            Metric {
+                icon: "👤",
+                title: "Added By",
+                value: added_by_inbox_id,
                 ..Default::default()
             },
-            ClientEvent::EpochChange(change) => Self {
-                icon: Some("📈"),
-                title: "Epoch Change".to_string(),
-                metrics: vec![Metric {
-                    icon: "E",
-                    title: "Epoch",
-                    value: format!("{}", change.new_epoch),
-                    from: Some(format!("{}", change.prev_epoch)),
-                    extra_info: change.validated_commit,
-                }],
+        ],
+        Details::GroupCreate {
+            conversation_type,
+            initial_members,
+        } => vec![
+            Metric {
+                icon: "T",
+                title: "Conversation Type",
+                value: format!("{:?}", conversation_type),
+                ..Default::default()
             },
-            ClientEvent::GroupWelcome(welcome) => Self {
-                icon: Some("🤗"),
-                title: "Group Welcome".to_string(),
-                metrics: vec![
-                    Metric {
-                        icon: "T",
-                        title: "Conversation Type",
-                        value: format!("{:?}", welcome.conversation_type),
-                        ..Default::default()
-                    },
-                    Metric {
-                        icon: "👤",
-                        title: "Added By",
-                        value: welcome.added_by_inbox_id,
-                        ..Default::default()
-                    },
-                ],
+            Metric {
+                icon: "👥",
+                title: "Initial Members",
+                value: format!("{initial_members:?}"),
+                ..Default::default()
             },
-            ClientEvent::QueueIntent(EvtQueueIntent {
-                intent_kind: IntentKind::SendMessage,
-            }) => Self {
-                icon: Some("💬"),
-                title: format!("Send Message Intent Queued"),
-                metrics: vec![],
-            },
-            ClientEvent::QueueIntent(EvtQueueIntent { intent_kind }) => Self {
-                icon: Some("🏁"),
-                title: format!("Queue Intent"),
-                metrics: vec![Metric {
-                    icon: "?",
-                    title: "Intent Kind",
-                    value: format!("{intent_kind:?}"),
-                    ..Default::default()
-                }],
-            },
-        }
+        ],
+        Details::QueueIntent {
+            intent_kind: IntentKind::SendMessage,
+        } => vec![],
+        Details::QueueIntent { intent_kind } => vec![Metric {
+            icon: "?",
+            title: "Intent Kind",
+            value: format!("{intent_kind:?}"),
+            ..Default::default()
+        }],
+        Details::MsgStreamConnect { .. } => vec![],
     }
 }

@@ -169,10 +169,7 @@ async fn client_events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -
             _ => continue,
         };
 
-        let Ok(event) = serde_json::from_slice::<ClientEvent>(&event_save.details) else {
-            continue;
-        };
-        let content = render_event_card(event);
+        let content = render_event_card(event_save.event, &event_save.details);
 
         let group = match event_save.group_id {
             Some(group_id) => hex::encode(group_id),
