@@ -1,5 +1,5 @@
 use base64::{prelude::BASE64_STANDARD, Engine};
-use xmtp_db::{client_events::Details, group_intent::IntentKind};
+use xmtp_db::client_events::Details;
 
 const CARD_HTML: &str = include_str!("_card.html");
 const METRIC_HTML: &str = include_str!("_metric.html");
@@ -36,7 +36,15 @@ pub fn render_event_card(event: String, details: &[u8]) -> String {
     let metrics = if let Ok(details) = serde_json::from_slice::<Details>(details) {
         details_to_metrics(details)
     } else {
-        vec![]
+        let extra_info: serde_json::Value = serde_json::from_slice(details).unwrap();
+        let extra_info = serde_json::to_string_pretty(&extra_info).unwrap();
+        vec![Metric {
+            icon: "🧐",
+            title: "Details",
+            value: "Click for details".to_string(),
+            extra_info: Some(extra_info),
+            ..Default::default()
+        }]
     };
 
     let card = Card {
@@ -90,20 +98,13 @@ fn details_to_metrics(details: Details) -> Vec<Metric> {
         Details::GroupWelcome {
             conversation_type,
             added_by_inbox_id,
-        } => vec![
-            Metric {
-                icon: "T",
-                title: "Conversation Type",
-                value: format!("{:?}", conversation_type),
-                ..Default::default()
-            },
-            Metric {
-                icon: "👤",
-                title: "Added By",
-                value: added_by_inbox_id,
-                ..Default::default()
-            },
-        ],
+        } => vec![Metric {
+            icon: "T",
+            title: "Conversation Type",
+            value: format!("{:?}", conversation_type),
+            extra_info: Some(format!("Added by: {added_by_inbox_id}")),
+            ..Default::default()
+        }],
         Details::GroupCreate {
             conversation_type,
             initial_members,
@@ -121,9 +122,6 @@ fn details_to_metrics(details: Details) -> Vec<Metric> {
                 ..Default::default()
             },
         ],
-        Details::QueueIntent {
-            intent_kind: IntentKind::SendMessage,
-        } => vec![],
         Details::QueueIntent { intent_kind } => vec![Metric {
             icon: "?",
             title: "Intent Kind",

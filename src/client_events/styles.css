@@ -267,7 +267,9 @@ button:active {
     }
 }
 
-#extra-info-container {
+#footer-container {
+    display: flex;
+    gap: 0.5rem;
     background: white;
     padding: 1rem;
     border-radius: 10px;
@@ -279,6 +281,7 @@ button:active {
     padding: 10px;
     max-height: 40vh;
     overflow-y: scroll;
+    flex: 1 1 auto;
 }
 #visualization {
     background: white;
@@ -286,6 +289,9 @@ button:active {
     flex: 1 1 auto;
     border: 1px solid lightgray;
     overflow-y: scroll;
+}
+.vis-group {
+    transition: height 0.3s ease;
 }
 
 /* ================================================== */
@@ -305,7 +311,7 @@ button:active {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
     border-radius: 5px;
-    padding: 10px;
+    padding: 5px;
     box-shadow:
         0 20px 40px rgba(0, 0, 0, 0.1),
         0 8px 16px rgba(0, 0, 0, 0.08),
@@ -330,7 +336,7 @@ button:active {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
+    height: 2px;
     background: linear-gradient(90deg, #4ade80, #06b6d4, #8b5cf6, #f59e0b);
     background-size: 200% 100%;
     animation: gradient-shift 3s ease-in-out infinite;
@@ -351,7 +357,7 @@ button:active {
 }
 
 .title {
-    font-size: 1rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #1f2937;
     margin-bottom: 4px;
@@ -366,13 +372,12 @@ button:active {
 .content {
     display: flex;
     flex-direction: column;
-    gap: 12px;
 }
 
 .metric {
     display: flex;
     align-items: center;
-    padding: 12px;
+    padding: 6px;
     background: rgba(248, 250, 252, 0.8);
     border-radius: 12px;
     border: 1px solid rgba(226, 232, 240, 0.6);
@@ -386,8 +391,8 @@ button:active {
 }
 
 .metric-icon {
-    width: 36px;
-    height: 36px;
+    width: 30px;
+    height: 30px;
     border-radius: 10px;
     display: flex;
     align-items: center;
@@ -423,7 +428,7 @@ button:active {
 }
 
 .metric-value {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #1f2937;
     overflow: hidden;
