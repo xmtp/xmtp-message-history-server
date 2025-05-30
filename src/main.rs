@@ -68,7 +68,7 @@ async fn upload_file(_req: HttpRequest, mut payload: web::Payload) -> impl Respo
 
 async fn get_file(_req: HttpRequest, path: web::Path<Uuid>) -> impl Responder {
     let file_id = path.to_string();
-    let file_path: PathBuf = format!("uploads/{}", file_id).into();
+    let file_path: PathBuf = format!("uploads/{file_id}").into();
 
     if file_path.exists() {
         // Read the file's content
@@ -191,7 +191,7 @@ async fn client_events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -
             start: event_save.created_at_ns / 1000000,
             content,
             group,
-            class_name: format!("blech"),
+            class_name: "bg-transparent".to_string(),
         });
         i += 1;
     }
@@ -211,11 +211,10 @@ async fn main() -> Result<()> {
     init_tracing()?;
     std::fs::create_dir_all("uploads")?;
 
-    #[cfg(not(test))]
-    cleanup::spawn_worker();
+    cleanup::spawn_cleanup_worker();
 
     let host = "0.0.0.0:5558";
-    println!("Starting server at: {}", host);
+    println!("Starting server at: {host}");
     HttpServer::new(move || {
         let cors = Cors::default()
             .allow_any_origin()
@@ -299,7 +298,7 @@ mod tests {
         let file_id = Uuid::new_v4();
         let file_name = Path::new(uploads_path).join(file_id.to_string());
         let mut file = File::create(&file_name).await.unwrap();
-        let _ = file.write_all(file_contents);
+        let _ = file.write_all(file_contents).await;
 
         let app = test::init_service(
             App::new().service(web::resource("/files/{id}").route(web::get().to(get_file))),

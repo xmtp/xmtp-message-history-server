@@ -7,7 +7,7 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-pub fn spawn_worker() {
+pub fn spawn_cleanup_worker() {
     thread::spawn(|| loop {
         if let Err(err) = cleanup() {
             tracing::error!("{err:?}");

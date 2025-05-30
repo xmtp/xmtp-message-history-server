@@ -64,8 +64,8 @@ pub fn render_event_card(event: String, details: &[u8]) -> String {
             let extra_info = BASE64_STANDARD.encode(m.extra_info.unwrap_or_default());
 
             METRIC_HTML
-                .replace(r#"{ icon }"#, &m.icon)
-                .replace(r#"{ label }"#, &m.title)
+                .replace(r#"{ icon }"#, m.icon)
+                .replace(r#"{ label }"#, m.title)
                 .replace(r#"{ value }"#, &m.value)
                 .replace(r#"{ extra-info }"#, &extra_info)
                 .replace(r#"{ change }"#, &partial)
@@ -74,7 +74,7 @@ pub fn render_event_card(event: String, details: &[u8]) -> String {
         .join("");
 
     CARD_HTML
-        .replace("{ icon }", &card.icon.unwrap_or_default())
+        .replace("{ icon }", card.icon.unwrap_or_default())
         .replace("{ title }", &card.title)
         .replace("{ metrics }", &metrics)
 }
@@ -91,8 +91,8 @@ fn details_to_metrics(details: Details) -> Vec<Metric> {
         } => vec![Metric {
             icon: "E",
             title: "Epoch",
-            value: format!("{}", new_epoch),
-            from: Some(format!("{}", prev_epoch)),
+            value: format!("{new_epoch}"),
+            from: Some(format!("{prev_epoch}")),
             extra_info: validated_commit,
         }],
         Details::GroupWelcome {
@@ -101,14 +101,14 @@ fn details_to_metrics(details: Details) -> Vec<Metric> {
         } => vec![Metric {
             icon: "T",
             title: "Conversation Type",
-            value: format!("{:?}", conversation_type),
+            value: format!("{conversation_type:?}"),
             extra_info: Some(format!("Added by: {added_by_inbox_id}")),
             ..Default::default()
         }],
         Details::GroupCreate { conversation_type } => vec![Metric {
             icon: "T",
             title: "Conversation Type",
-            value: format!("{:?}", conversation_type),
+            value: format!("{conversation_type:?}"),
             ..Default::default()
         }],
         Details::QueueIntent { intent_kind } => vec![Metric {
@@ -120,7 +120,7 @@ fn details_to_metrics(details: Details) -> Vec<Metric> {
         Details::Error { error } => vec![Metric {
             icon: "⛔",
             title: "Error Details",
-            value: format!("Click for Details"),
+            value: "Click for Details".to_string(),
             extra_info: Some(error),
             ..Default::default()
         }],
@@ -133,7 +133,7 @@ fn details_to_metrics(details: Details) -> Vec<Metric> {
         Details::GroupMembershipChange { added, removed } => vec![Metric {
             icon: "C",
             title: "Group Membership Change",
-            value: format!("Click for Details"),
+            value: "Click for Details".to_string(),
             extra_info: Some(format!("Added: {added:?}\nRemoved: {removed:?}")),
             ..Default::default()
         }],

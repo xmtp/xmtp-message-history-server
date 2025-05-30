@@ -297,7 +297,7 @@ button:active {
 /* ================================================== */
 /* Status card */
 /* ================================================== */
-.blech {
+.bg-transparent {
     background: transparent;
 }
 .vis-item-content {
