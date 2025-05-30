@@ -71,7 +71,7 @@ mod tests {
 
         let now = SystemTime::now();
         let one_day_ago = now
-            .checked_sub(Duration::from_secs(24 * 60 * 60 * 2))
+            .checked_sub(Duration::from_secs(24 * 60 * 60 * 14))
             .expect("Time calculation error");
 
         // Convert SystemTime to std::fs::FileTime
