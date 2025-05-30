@@ -1,5 +1,5 @@
 use base64::{prelude::BASE64_STANDARD, Engine};
-use xmtp_db::client_events::Details;
+use xmtp_db::events::Details;
 
 const CARD_HTML: &str = include_str!("_card.html");
 const METRIC_HTML: &str = include_str!("_metric.html");
@@ -105,29 +105,39 @@ fn details_to_metrics(details: Details) -> Vec<Metric> {
             extra_info: Some(format!("Added by: {added_by_inbox_id}")),
             ..Default::default()
         }],
-        Details::GroupCreate {
-            conversation_type,
-            initial_members,
-        } => vec![
-            Metric {
-                icon: "T",
-                title: "Conversation Type",
-                value: format!("{:?}", conversation_type),
-                ..Default::default()
-            },
-            Metric {
-                icon: "👥",
-                title: "Initial Members",
-                value: format!("{initial_members:?}"),
-                ..Default::default()
-            },
-        ],
+        Details::GroupCreate { conversation_type } => vec![Metric {
+            icon: "T",
+            title: "Conversation Type",
+            value: format!("{:?}", conversation_type),
+            ..Default::default()
+        }],
         Details::QueueIntent { intent_kind } => vec![Metric {
             icon: "?",
             title: "Intent Kind",
             value: format!("{intent_kind:?}"),
             ..Default::default()
         }],
+        Details::Error { error } => vec![Metric {
+            icon: "⛔",
+            title: "Error Details",
+            value: format!("Click for Details"),
+            extra_info: Some(error),
+            ..Default::default()
+        }],
+        Details::KPRotate { history_id } => vec![Metric {
+            icon: "🔑",
+            title: "Key Package Rotate",
+            value: format!("History id: {history_id}"),
+            ..Default::default()
+        }],
+        Details::GroupMembershipChange { added, removed } => vec![Metric {
+            icon: "C",
+            title: "Group Membership Change",
+            value: format!("Click for Details"),
+            extra_info: Some(format!("Added: {added:?}\nRemoved: {removed:?}")),
+            ..Default::default()
+        }],
+
         Details::MsgStreamConnect { .. } => vec![],
     }
 }

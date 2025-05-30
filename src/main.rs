@@ -10,7 +10,6 @@ use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use uuid::Uuid;
 use xmtp_archive::ArchiveImporter;
-use xmtp_db::client_events::ClientEvent;
 use xmtp_proto::xmtp::device_sync::backup_element::Element;
 use xmtp_proto::xmtp::device_sync::BackupElement;
 
@@ -162,7 +161,7 @@ async fn client_events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -
         };
 
         let event_save = match element {
-            Element::ClientEvent(event) => event,
+            Element::Event(event) => event,
             Element::Group(group_save) => {
                 let mut attributes = group_save
                     .mutable_metadata
@@ -203,76 +202,6 @@ async fn client_events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -
     HttpResponse::Ok().content_type("text/html").body(page)
 }
 
-#[derive(Serialize)]
-struct EventsResponse {
-    events: Vec<Event>,
-    groups: Vec<Group>,
-}
-
-async fn events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -> impl Responder {
-    let (id, key) = match CheckKeyForm::decode(&form_data.key) {
-        Ok(v) => v,
-        Err(r) => return r,
-    };
-
-    let file_path: PathBuf = format!("uploads/{id}").into();
-    tracing::info!("Loading file: {file_path:?}");
-    let mut importer = ArchiveImporter::from_file(&file_path, &key).await.unwrap();
-
-    let mut events = vec![];
-    let mut groups = vec![Group {
-        content: "Global".to_string(),
-        id: "Global".to_string(),
-    }];
-
-    let mut i = 0;
-    while let Some(Ok(element)) = importer.next().await {
-        let BackupElement {
-            element: Some(element),
-        } = element
-        else {
-            continue;
-        };
-
-        let event_save = match element {
-            Element::ClientEvent(event) => event,
-            Element::Group(group_save) => {
-                let mut attributes = group_save
-                    .mutable_metadata
-                    .map(|m| m.attributes)
-                    .unwrap_or_default();
-                let name = attributes.remove("group_name").unwrap_or_default();
-                let id = hex::encode(&group_save.id);
-
-                groups.push(Group {
-                    id: id.clone(),
-                    content: format!("{id}<br />{name}"),
-                });
-                continue;
-            }
-            _ => continue,
-        };
-
-        let content = render_event_card(event_save.event, &event_save.details);
-
-        let group = match event_save.group_id {
-            Some(group_id) => hex::encode(group_id),
-            _ => "Global".to_string(),
-        };
-
-        events.push(Event {
-            id: i,
-            start: event_save.created_at_ns / 1000000,
-            content,
-            group,
-            class_name: format!("blech"),
-        });
-        i += 1;
-    }
-
-    HttpResponse::Ok().json(EventsResponse { events, groups })
-}
-
 async fn health_check() -> impl Responder {
     HttpResponse::Ok().finish()
 }
@@ -285,7 +214,7 @@ async fn main() -> Result<()> {
     #[cfg(not(test))]
     cleanup::spawn_worker();
 
-    let host = "0.0.0.0:5559";
+    let host = "0.0.0.0:5558";
     println!("Starting server at: {}", host);
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -301,7 +230,6 @@ async fn main() -> Result<()> {
             .service(web::resource("/files/{id}").route(web::get().to(get_file)))
             .service(web::resource("/key").route(web::get().to(key_form)))
             .service(web::resource("/client-events").route(web::get().to(client_events)))
-            .service(web::resource("/events").route(web::get().to(events)))
             .service(web::resource("/styles.css").route(web::get().to(styles)))
     })
     .bind(host)?

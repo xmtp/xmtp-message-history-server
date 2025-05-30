@@ -14,7 +14,7 @@ filetime = "0.2"
 hex = "0.4"
 tracing = { version = "0.1", features = ["log"] }
 xmtp_archive = {git  = "https://github.com/xmtp/libxmtp", branch = "coda/more-events"}
-xmtp_proto = {git = "https://github.com/xmtp/libxmtp", branch = "coda/client-events"}
+xmtp_proto = {git = "https://github.com/xmtp/libxmtp", branch = "coda/more-events"}
 xmtp_db = {git = "https://github.com/xmtp/libxmtp", branch = "coda/more-events"}
 serde = "1.0.219"
 serde_json = "1.0.140"

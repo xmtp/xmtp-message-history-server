@@ -695,9 +695,9 @@ dependencies = [
 
 [[package]]
 name = "cc"
-version = "1.2.23"
+version = "1.2.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5f4ac86a9e5bc1e2b3449ab9d7d3a6a405e3d1bb28d7b9be8614f55846ae3766"
+checksum = "d0fc897dc1e865cc67c0e05a836d9d3f1df3cbe442aa4a9473b18e12624a4951"
 dependencies = [
  "jobserver",
  "libc",
@@ -904,9 +904,9 @@ dependencies = [
 
 [[package]]
 name = "core-foundation"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b55271e5c8c478ad3f38ad24ef34923091e0548492a266d19b3c0b4d82574c63"
+checksum = "b2a6cd9ae233e7f62ba4e9353e81a88df7fc8a5987b8d445b4d90c879bd156f6"
 dependencies = [
  "core-foundation-sys",
  "libc",
@@ -992,13 +992,19 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.2.9"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32a2785755761f3ddc1492979ce1e48d2c00d09311c39e4466429188f3dd6501"
+checksum = "a4735f265ba6a1188052ca32d461028a7d1125868be18e287e756019da7607b5"
 dependencies = [
- "quote",
- "syn 2.0.101",
+ "ctor-proc-macro",
+ "dtor",
 ]
+
+[[package]]
+name = "ctor-proc-macro"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4f211af61d8efdd104f96e57adf5e426ba1bc3ed7a4ead616e15e5881fd79c4d"
 
 [[package]]
 name = "ctr"
@@ -1199,7 +1205,7 @@ dependencies = [
 [[package]]
 name = "diesel"
 version = "2.2.4"
-source = "git+https://github.com/diesel-rs/diesel?branch=master#325b926b6022761d5b79dc3dbd1dfe7d3ba2df62"
+source = "git+https://github.com/diesel-rs/diesel?branch=master#dcdc09e99470c8816228b3033fe7d5cc6b87bdbc"
 dependencies = [
  "diesel_derives",
  "downcast-rs",
@@ -1213,7 +1219,7 @@ dependencies = [
 [[package]]
 name = "diesel_derives"
 version = "2.2.0"
-source = "git+https://github.com/diesel-rs/diesel?branch=master#325b926b6022761d5b79dc3dbd1dfe7d3ba2df62"
+source = "git+https://github.com/diesel-rs/diesel?branch=master#dcdc09e99470c8816228b3033fe7d5cc6b87bdbc"
 dependencies = [
  "diesel_table_macro_syntax",
  "dsl_auto_type",
@@ -1225,7 +1231,7 @@ dependencies = [
 [[package]]
 name = "diesel_migrations"
 version = "2.2.0"
-source = "git+https://github.com/diesel-rs/diesel?branch=master#325b926b6022761d5b79dc3dbd1dfe7d3ba2df62"
+source = "git+https://github.com/diesel-rs/diesel?branch=master#dcdc09e99470c8816228b3033fe7d5cc6b87bdbc"
 dependencies = [
  "diesel",
  "migrations_internals",
@@ -1235,7 +1241,7 @@ dependencies = [
 [[package]]
 name = "diesel_table_macro_syntax"
 version = "0.2.0"
-source = "git+https://github.com/diesel-rs/diesel?branch=master#325b926b6022761d5b79dc3dbd1dfe7d3ba2df62"
+source = "git+https://github.com/diesel-rs/diesel?branch=master#dcdc09e99470c8816228b3033fe7d5cc6b87bdbc"
 dependencies = [
  "syn 2.0.101",
 ]
@@ -1320,7 +1326,7 @@ checksum = "ea8a8b81cacc08888170eef4d13b775126db426d0b348bee9d18c2c1eaf123cf"
 [[package]]
 name = "dsl_auto_type"
 version = "0.1.0"
-source = "git+https://github.com/diesel-rs/diesel?branch=master#325b926b6022761d5b79dc3dbd1dfe7d3ba2df62"
+source = "git+https://github.com/diesel-rs/diesel?branch=master#dcdc09e99470c8816228b3033fe7d5cc6b87bdbc"
 dependencies = [
  "darling",
  "either",
@@ -1329,6 +1335,21 @@ dependencies = [
  "quote",
  "syn 2.0.101",
 ]
+
+[[package]]
+name = "dtor"
+version = "0.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "97cbdf2ad6846025e8e25df05171abfb30e3ababa12ee0a0e44b9bbe570633a8"
+dependencies = [
+ "dtor-proc-macro",
+]
+
+[[package]]
+name = "dtor-proc-macro"
+version = "0.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7454e41ff9012c00d53cf7f475c5e3afa3b91b7c90568495495e8d9bf47a1055"
 
 [[package]]
 name = "dunce"
@@ -1807,6 +1828,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 
 [[package]]
+name = "fdlimit"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e182f7dbc2ef73d9ef67351c5fbbea084729c48362d3ce9dd44c28e32e277fe5"
+dependencies = [
+ "libc",
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "ff"
 version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2219,9 +2250,9 @@ checksum = "2304e00983f87ffb38b55b444b5e3b60a884b5d30c0fca7d82fe33449bbe55ea"
 
 [[package]]
 name = "hermit-abi"
-version = "0.3.9"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d231dfb89cfffdbc30e7fc41579ed6066ad03abda9e567ccafae602b97ec5024"
+checksum = "f154ce46856750ed433c8649605bf7ed2de3bc35fd9d2a9f30cddd873c80cb08"
 
 [[package]]
 name = "hex"
@@ -2425,11 +2456,10 @@ dependencies = [
 
 [[package]]
 name = "hyper-rustls"
-version = "0.27.5"
+version = "0.27.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d191583f3da1305256f22463b9bb0471acad48a4e534a5218b9963e9c1f59b2"
+checksum = "03a01595e11bdcec50946522c32dde3fc6914743000a68b93000965f2f02406d"
 dependencies = [
- "futures-util",
  "http 1.3.1",
  "hyper 1.6.0",
  "hyper-util",
@@ -2471,22 +2501,28 @@ dependencies = [
 
 [[package]]
 name = "hyper-util"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cf9f1e950e0d9d1d3c47184416723cf29c0d1f93bd8cccf37e4beb6b44f31710"
+checksum = "b1c293b6b3d21eca78250dc7dbebd6b9210ec5530e038cbfe0661b5c47ab06e8"
 dependencies = [
+ "base64 0.22.1",
  "bytes",
  "futures-channel",
+ "futures-core",
  "futures-util",
  "http 1.3.1",
  "http-body 1.0.1",
  "hyper 1.6.0",
+ "ipnet",
  "libc",
+ "percent-encoding",
  "pin-project-lite",
  "socket2",
+ "system-configuration 0.6.1",
  "tokio",
  "tower-service",
  "tracing",
+ "windows-registry",
 ]
 
 [[package]]
@@ -2769,6 +2805,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "469fb0b9cefa57e3ef31275ee7cacb78f2fdca44e4765491884a2b119d4eb130"
 
 [[package]]
+name = "iri-string"
+version = "0.7.8"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbc5ebe9c3a1a7a5127f920a418f7585e9e758e911d0466ed004f393b0e380b2"
+dependencies = [
+ "memchr",
+ "serde",
+]
+
+[[package]]
 name = "itertools"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2960,9 +3006,9 @@ checksum = "4d873d7c67ce09b42110d801813efbc9364414e356be9935700d368351657487"
 
 [[package]]
 name = "lock_api"
-version = "0.4.12"
+version = "0.4.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "07af8b9cdd281b7915f413fa73f29ebd5d55d0d3f0155584dade1ff18cea1b17"
+checksum = "96936507f153605bddfcda068dd804796c84324ed2510809e5b2a624c81da765"
 dependencies = [
  "autocfg",
  "scopeguard",
@@ -3056,7 +3102,7 @@ checksum = "78ca9ab1a0babb1e7d5695e3530886289c18cf2f87ec19a575a0abdce112e3a3"
 [[package]]
 name = "migrations_internals"
 version = "2.2.0"
-source = "git+https://github.com/diesel-rs/diesel?branch=master#325b926b6022761d5b79dc3dbd1dfe7d3ba2df62"
+source = "git+https://github.com/diesel-rs/diesel?branch=master#dcdc09e99470c8816228b3033fe7d5cc6b87bdbc"
 dependencies = [
  "serde",
  "toml",
@@ -3065,7 +3111,7 @@ dependencies = [
 [[package]]
 name = "migrations_macros"
 version = "2.2.0"
-source = "git+https://github.com/diesel-rs/diesel?branch=master#325b926b6022761d5b79dc3dbd1dfe7d3ba2df62"
+source = "git+https://github.com/diesel-rs/diesel?branch=master#dcdc09e99470c8816228b3033fe7d5cc6b87bdbc"
 dependencies = [
  "migrations_internals",
  "proc-macro2",
@@ -3099,14 +3145,14 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2886843bf800fba2e3377cff24abf6379b4c4d5c6681eaf9ea5b0d15090450bd"
+checksum = "78bed444cc8a2160f01cbcf811ef18cac863ad68ae8ca62092e8db51d51c761c"
 dependencies = [
  "libc",
  "log",
  "wasi 0.11.0+wasi-snapshot-preview1",
- "windows-sys 0.52.0",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]
@@ -3210,9 +3256,9 @@ dependencies = [
 
 [[package]]
 name = "num_cpus"
-version = "1.16.0"
+version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4161fcb6d602d4d2081af7c3a45852d875a03dd337a6bfdd6e06407b61342a43"
+checksum = "91df4bbde75afed763b708b7eee1e8e7651e02d97f6d5dd763e89367e957b23b"
 dependencies = [
  "hermit-abi",
  "libc",
@@ -3287,8 +3333,8 @@ dependencies = [
 
 [[package]]
 name = "openmls"
-version = "0.6.0"
-source = "git+https://github.com/xmtp/openmls?rev=082cab5f17a54796e87bc1762a64496c86cb9bf8#082cab5f17a54796e87bc1762a64496c86cb9bf8"
+version = "0.6.1"
+source = "git+https://github.com/xmtp/openmls?rev=b18f5ca4cfc15a390fa914980267cc5028fc6b60#b18f5ca4cfc15a390fa914980267cc5028fc6b60"
 dependencies = [
  "fluvio-wasm-timer",
  "getrandom 0.2.16",
@@ -3296,14 +3342,14 @@ dependencies = [
  "openmls_traits",
  "rayon",
  "serde",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tls_codec",
 ]
 
 [[package]]
 name = "openmls_basic_credential"
 version = "0.3.0"
-source = "git+https://github.com/xmtp/openmls?rev=082cab5f17a54796e87bc1762a64496c86cb9bf8#082cab5f17a54796e87bc1762a64496c86cb9bf8"
+source = "git+https://github.com/xmtp/openmls?rev=b18f5ca4cfc15a390fa914980267cc5028fc6b60#b18f5ca4cfc15a390fa914980267cc5028fc6b60"
 dependencies = [
  "ed25519-dalek",
  "openmls_traits",
@@ -3316,19 +3362,19 @@ dependencies = [
 [[package]]
 name = "openmls_memory_storage"
 version = "0.3.0"
-source = "git+https://github.com/xmtp/openmls?rev=082cab5f17a54796e87bc1762a64496c86cb9bf8#082cab5f17a54796e87bc1762a64496c86cb9bf8"
+source = "git+https://github.com/xmtp/openmls?rev=b18f5ca4cfc15a390fa914980267cc5028fc6b60#b18f5ca4cfc15a390fa914980267cc5028fc6b60"
 dependencies = [
  "log",
  "openmls_traits",
  "serde",
  "serde_json",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
 ]
 
 [[package]]
 name = "openmls_rust_crypto"
 version = "0.3.0"
-source = "git+https://github.com/xmtp/openmls?rev=082cab5f17a54796e87bc1762a64496c86cb9bf8#082cab5f17a54796e87bc1762a64496c86cb9bf8"
+source = "git+https://github.com/xmtp/openmls?rev=b18f5ca4cfc15a390fa914980267cc5028fc6b60#b18f5ca4cfc15a390fa914980267cc5028fc6b60"
 dependencies = [
  "aes-gcm",
  "chacha20poly1305",
@@ -3345,14 +3391,14 @@ dependencies = [
  "rand_chacha 0.3.1",
  "serde",
  "sha2",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tls_codec",
 ]
 
 [[package]]
 name = "openmls_traits"
-version = "0.3.0"
-source = "git+https://github.com/xmtp/openmls?rev=082cab5f17a54796e87bc1762a64496c86cb9bf8#082cab5f17a54796e87bc1762a64496c86cb9bf8"
+version = "0.4.0"
+source = "git+https://github.com/xmtp/openmls?rev=b18f5ca4cfc15a390fa914980267cc5028fc6b60#b18f5ca4cfc15a390fa914980267cc5028fc6b60"
 dependencies = [
  "serde",
  "tls_codec",
@@ -3360,9 +3406,9 @@ dependencies = [
 
 [[package]]
 name = "openssl"
-version = "0.10.72"
+version = "0.10.73"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fedfea7d58a1f73118430a55da6a286e7b044961736ce96a16a17068ea25e5da"
+checksum = "8505734d46c8ab1e19a1dce3aef597ad87dcb4c37e7188231769bd6bd51cebf8"
 dependencies = [
  "bitflags 2.9.1",
  "cfg-if",
@@ -3401,9 +3447,9 @@ dependencies = [
 
 [[package]]
 name = "openssl-sys"
-version = "0.9.108"
+version = "0.9.109"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e145e1651e858e820e4860f7b9c5e169bc1d8ce1c86043be79fa7b7634821847"
+checksum = "90096e2e47630d78b7d1c20952dc621f957103f8bc2c8359ec81290d75238571"
 dependencies = [
  "cc",
  "libc",
@@ -3493,12 +3539,12 @@ dependencies = [
 
 [[package]]
 name = "parking_lot"
-version = "0.12.3"
+version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f1bf18183cf54e8d6059647fc3063646a1801cf30896933ec2311622cc4b9a27"
+checksum = "70d58bf43669b5795d1576d0641cfb6fbb2057bf629506267a92807158584a13"
 dependencies = [
  "lock_api",
- "parking_lot_core 0.9.10",
+ "parking_lot_core 0.9.11",
 ]
 
 [[package]]
@@ -3517,9 +3563,9 @@ dependencies = [
 
 [[package]]
 name = "parking_lot_core"
-version = "0.9.10"
+version = "0.9.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e401f977ab385c9e4e3ab30627d6f26d00e2c73eef317493c4ec6d468726cf8"
+checksum = "bc838d2a56b5b1a6c25f55575dfc605fabb63bb2365f6c2353ef9159aa69e4a5"
 dependencies = [
  "cfg-if",
  "libc",
@@ -3829,9 +3875,9 @@ dependencies = [
 
 [[package]]
 name = "prettyplease"
-version = "0.2.32"
+version = "0.2.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "664ec5419c51e34154eec046ebcba56312d5a2fc3b09a06da188e1ad21afadf6"
+checksum = "9dee91521343f4c5c6a63edd65e54f31f5c92fe8978c40a4282f8372194c6a7d"
 dependencies = [
  "proc-macro2",
  "syn 2.0.101",
@@ -3968,7 +4014,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51de85fb3fb6524929c8a2eb85e6b6d363de4e8c48f9e2c2eac4944abc181c93"
 dependencies = [
  "log",
- "parking_lot 0.12.3",
+ "parking_lot 0.12.4",
  "scheduled-thread-pool",
 ]
 
@@ -4188,9 +4234,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.15"
+version = "0.12.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d19c46a6fdd48bc4dab94b6103fccc55d34c67cc0ad04653aad4ea2a07cd7bbb"
+checksum = "e98ff6b0dbbe4d5a37318f433d4fc82babd21631f194d370409ceb2e40b2f0b5"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -4202,7 +4248,7 @@ dependencies = [
  "http-body 1.0.1",
  "http-body-util",
  "hyper 1.6.0",
- "hyper-rustls 0.27.5",
+ "hyper-rustls 0.27.6",
  "hyper-tls",
  "hyper-util",
  "ipnet",
@@ -4213,23 +4259,22 @@ dependencies = [
  "once_cell",
  "percent-encoding",
  "pin-project-lite",
- "rustls-pemfile 2.2.0",
+ "rustls-pki-types",
  "serde",
  "serde_json",
  "serde_urlencoded",
  "sync_wrapper 1.0.2",
- "system-configuration 0.6.1",
  "tokio",
  "tokio-native-tls",
  "tokio-util",
  "tower 0.5.2",
+ "tower-http",
  "tower-service",
  "url",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-streams",
  "web-sys",
- "windows-registry",
 ]
 
 [[package]]
@@ -4492,7 +4537,7 @@ version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3cbc66816425a074528352f5789333ecff06ca41b36b0b0efdfbb29edc391a19"
 dependencies = [
- "parking_lot 0.12.3",
+ "parking_lot 0.12.4",
 ]
 
 [[package]]
@@ -4568,7 +4613,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "271720403f46ca04f7ba6f55d438f8bd878d6b8ca0a1046e8228c4145bcbb316"
 dependencies = [
  "bitflags 2.9.1",
- "core-foundation 0.10.0",
+ "core-foundation 0.10.1",
  "core-foundation-sys",
  "libc",
  "security-framework-sys",
@@ -4759,9 +4804,9 @@ checksum = "8917285742e9f3e1683f0a9c4e6b57960b7314d0b08d30d1ecd426713ee2eee9"
 
 [[package]]
 name = "socket2"
-version = "0.5.9"
+version = "0.5.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f5fd57c80058a56cf5c777ab8a126398ece8e442983605d280a44ce79d0edef"
+checksum = "e22376abed350d73dd1cd119b57ffccad95b4e585a7cda43e286245ce23c0678"
 dependencies = [
  "libc",
  "windows-sys 0.52.0",
@@ -4807,7 +4852,7 @@ dependencies = [
  "indexed_db_futures",
  "js-sys",
  "once_cell",
- "parking_lot 0.12.3",
+ "parking_lot 0.12.4",
  "thiserror 2.0.12",
  "tokio",
  "wasm-bindgen",
@@ -4834,7 +4879,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bf776ba3fa74f83bf4b63c3dcbbf82173db2632ed8452cb2d891d33f459de70f"
 dependencies = [
  "new_debug_unreachable",
- "parking_lot 0.12.3",
+ "parking_lot 0.12.4",
  "phf_shared",
  "precomputed-hash",
 ]
@@ -5158,15 +5203,15 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.45.0"
+version = "1.45.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2513ca694ef9ede0fb23fe71a4ee4107cb102b9dc1930f6d0fd77aae068ae165"
+checksum = "75ef51a33ef1da925cea3e4eb122833cb377c61439ca401b770f54902b806779"
 dependencies = [
  "backtrace",
  "bytes",
  "libc",
  "mio",
- "parking_lot 0.12.3",
+ "parking_lot 0.12.4",
  "pin-project-lite",
  "signal-hook-registry",
  "socket2",
@@ -5367,6 +5412,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "tower-http"
+version = "0.6.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0fdb0c213ca27a9f57ab69ddb290fd80d970922355b83ae380b395d3986b8a2e"
+dependencies = [
+ "bitflags 2.9.1",
+ "bytes",
+ "futures-util",
+ "http 1.3.1",
+ "http-body 1.0.1",
+ "iri-string",
+ "pin-project-lite",
+ "tower 0.5.2",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
 name = "tower-layer"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -5414,11 +5477,11 @@ dependencies = [
 [[package]]
 name = "tracing-forest"
 version = "0.1.6"
-source = "git+https://github.com/QnnOkabayashi/tracing-forest?branch=main#5683ebaf82ae0060334976fdd1011e8f0cdb08c2"
+source = "git+https://github.com/QnnOkabayashi/tracing-forest?branch=main#c80ce05b7b0bde47108a77ed4d069916717d6138"
 dependencies = [
  "chrono",
  "smallvec",
- "thiserror 1.0.69",
+ "thiserror 2.0.12",
  "tracing",
  "tracing-subscriber",
 ]
@@ -6249,7 +6312,7 @@ dependencies = [
 [[package]]
 name = "xmtp_api"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "async-trait",
  "futures",
@@ -6264,7 +6327,7 @@ dependencies = [
 [[package]]
 name = "xmtp_api_grpc"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "async-trait",
  "futures",
@@ -6281,16 +6344,18 @@ dependencies = [
 [[package]]
 name = "xmtp_archive"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "aes-gcm",
  "async-compression",
+ "chrono",
  "futures",
  "futures-util",
+ "getrandom 0.2.16",
  "openmls",
  "openmls_traits",
  "prost",
- "reqwest 0.12.15",
+ "reqwest 0.12.18",
  "serde",
  "serde_json",
  "sha2",
@@ -6298,7 +6363,6 @@ dependencies = [
  "tokio",
  "tokio-util",
  "tracing",
- "xmtp_api",
  "xmtp_common",
  "xmtp_db",
  "xmtp_mls_common",
@@ -6308,11 +6372,13 @@ dependencies = [
 [[package]]
 name = "xmtp_common"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "async-trait",
  "bytes",
  "console_error_panic_hook",
+ "ctor",
+ "fdlimit",
  "futures",
  "getrandom 0.2.16",
  "gloo-timers 0.3.0",
@@ -6320,7 +6386,7 @@ dependencies = [
  "js-sys",
  "once_cell",
  "owo-colors",
- "parking_lot 0.12.3",
+ "parking_lot 0.12.4",
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "thiserror 2.0.12",
@@ -6328,6 +6394,7 @@ dependencies = [
  "tokio-stream",
  "tracing",
  "tracing-forest",
+ "tracing-futures",
  "tracing-subscriber",
  "tracing-wasm",
  "wasm-bindgen",
@@ -6341,7 +6408,7 @@ dependencies = [
 [[package]]
 name = "xmtp_content_types"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "prost",
  "serde",
@@ -6356,7 +6423,7 @@ dependencies = [
 [[package]]
 name = "xmtp_cryptography"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "curve25519-dalek",
  "ecdsa",
@@ -6384,7 +6451,7 @@ dependencies = [
 [[package]]
 name = "xmtp_db"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "bincode",
  "ctor",
@@ -6394,11 +6461,12 @@ dependencies = [
  "dyn-clone",
  "hex",
  "libsqlite3-sys",
+ "mockall",
  "openmls",
  "openmls_basic_credential",
  "openmls_rust_crypto",
  "openmls_traits",
- "parking_lot 0.12.3",
+ "parking_lot 0.12.4",
  "prost",
  "rand 0.8.5",
  "serde",
@@ -6418,7 +6486,7 @@ dependencies = [
 [[package]]
 name = "xmtp_id"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -6452,7 +6520,7 @@ dependencies = [
 [[package]]
 name = "xmtp_macro"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6462,7 +6530,7 @@ dependencies = [
 [[package]]
 name = "xmtp_mls_common"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "openmls",
  "prost",
@@ -6477,7 +6545,7 @@ dependencies = [
 [[package]]
 name = "xmtp_proto"
 version = "1.3.0-dev"
-source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fclient-events#b53b05c979e78ac54aad74f9fac9f6e464a124d4"
+source = "git+https://github.com/xmtp/libxmtp?branch=coda%2Fmore-events#40f7efd8067c901595a6fc8264478cb2fb130610"
 dependencies = [
  "async-trait",
  "derive_builder",
