@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Client Events</title>
+        <script
+            type="text/javascript"
+            src="https://unpkg.com/vis-timeline@latest/standalone/umd/vis-timeline-graph2d.min.js"
+        ></script>
+        <link
+            href="https://unpkg.com/vis-timeline@latest/styles/vis-timeline-graph2d.min.css"
+            rel="stylesheet"
+            type="text/css"
+        />
+        <link rel="stylesheet" type="text/css" href="styles.css" />
+        <style>
+            .filter-container {
+                background: rgba(255, 255, 255, 0.9);
+                padding: 10px;
+                border-radius: 5px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+
+            .filter-input {
+                width: 300px;
+                padding: 8px;
+                border: 1px solid #ccc;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+
+            .filter-label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+                color: #333;
+            }
+
+            .filter-help {
+                font-size: 12px;
+                color: #666;
+                margin-top: 5px;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Floating particles -->
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+
+        <!-- Filter input -->
+
+        <div id="visualization"></div>
+        <div id="footer-container">
+            <div class="filter-container">
+                <label class="filter-label" for="group-filter"
+                    >Filter Groups:</label
+                >
+                <input
+                    type="text"
+                    id="group-filter"
+                    class="filter-input"
+                    placeholder="Enter partial group IDs/names (e.g., serv,test,1)"
+                />
+                <div class="filter-help">
+                    Leave empty to show all groups. Supports partial matching.
+                </div>
+            </div>
+            <pre id="extra-info"></pre>
+        </div>
+        <script type="text/javascript">
+            var container = document.getElementById("visualization");
+            var items = new vis.DataSet({ itemdata });
+            var originalGroups = { groupdata };
+            var groups = originalGroups; // Current groups being displayed
+
+            // Configuration for the Timeline
+            var options = { xss: { disabled: true } };
+            // Create a Timeline
+            var timeline = new vis.Timeline(container, items, groups, options);
+
+            // Function to filter groups based on input
+            function filterGroups() {
+                const filterInput = document.getElementById("group-filter");
+                const filterValue = filterInput.value.trim();
+
+                if (filterValue === "") {
+                    // Show all groups if input is empty
+                    groups = originalGroups;
+                    timeline.setGroups(groups);
+                    return;
+                }
+
+                // Parse comma-separated search terms
+                const searchTerms = filterValue
+                    .split(",")
+                    .map((term) => term.trim().toLowerCase())
+                    .filter((term) => term !== "");
+
+                if (searchTerms.length === 0) {
+                    groups = originalGroups;
+                    timeline.setGroups(groups);
+                    return;
+                }
+
+                // Filter groups based on partial matches
+                let filteredGroups;
+                if (originalGroups instanceof vis.DataSet) {
+                    filteredGroups = originalGroups.get({
+                        filter: function (item) {
+                            return searchTerms.some((term) => {
+                                // Check if any search term partially matches the group ID or content
+                                const idMatch = String(item.id)
+                                    .toLowerCase()
+                                    .includes(term);
+                                const contentMatch =
+                                    item.content &&
+                                    String(item.content)
+                                        .toLowerCase()
+                                        .includes(term);
+                                const nameMatch =
+                                    item.name &&
+                                    String(item.name)
+                                        .toLowerCase()
+                                        .includes(term);
+                                return idMatch || contentMatch || nameMatch;
+                            });
+                        },
+                    });
+                    groups = new vis.DataSet(filteredGroups);
+                } else if (Array.isArray(originalGroups)) {
+                    filteredGroups = originalGroups.filter((group) => {
+                        return searchTerms.some((term) => {
+                            const idMatch = String(group.id)
+                                .toLowerCase()
+                                .includes(term);
+                            const contentMatch =
+                                group.content &&
+                                String(group.content)
+                                    .toLowerCase()
+                                    .includes(term);
+                            const nameMatch =
+                                group.name &&
+                                String(group.name).toLowerCase().includes(term);
+                            return idMatch || contentMatch || nameMatch;
+                        });
+                    });
+                    groups = filteredGroups;
+                }
+
+                timeline.setGroups(groups);
+            }
+
+            // Add event listener for real-time filtering
+            document
+                .getElementById("group-filter")
+                .addEventListener("input", filterGroups);
+
+            // Also filter on Enter key
+            document
+                .getElementById("group-filter")
+                .addEventListener("keypress", function (event) {
+                    if (event.key === "Enter") {
+                        filterGroups();
+                    }
+                });
+
+            function appendToElement(elementId, textToAppend) {
+                const targetElement = document.getElementById(elementId);
+                if (targetElement) {
+                    targetElement.textContent = atob(textToAppend);
+                }
+            }
+
+            document.addEventListener("keydown", function (event) {
+                // Check if the pressed key is Escape (key code 27 or event.key === 'Escape')
+                if (event.key === "Escape" || event.keyCode === 27) {
+                    appendToElement("extra-info", "");
+                }
+            });
+        </script>
+    </body>
+</html>

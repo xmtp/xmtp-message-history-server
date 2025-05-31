@@ -7,7 +7,7 @@ use std::{
     time::{Duration, SystemTime},
 };
 
-pub fn spawn_worker() {
+pub fn spawn_cleanup_worker() {
     thread::spawn(|| loop {
         if let Err(err) = cleanup() {
             tracing::error!("{err:?}");
@@ -34,8 +34,8 @@ fn cleanup() -> Result<()> {
         let modified = metadata.modified()?;
         let age = now.duration_since(modified)?;
 
-        // Is the file less than a day old?
-        if age < Duration::from_secs(60 * 60 * 24) {
+        // Is the file less than a week old?
+        if age < Duration::from_secs(60 * 60 * 24 * 7) {
             continue;
         }
 
@@ -71,7 +71,7 @@ mod tests {
 
         let now = SystemTime::now();
         let one_day_ago = now
-            .checked_sub(Duration::from_secs(24 * 60 * 60 * 2))
+            .checked_sub(Duration::from_secs(24 * 60 * 60 * 14))
             .expect("Time calculation error");
 
         // Convert SystemTime to std::fs::FileTime
