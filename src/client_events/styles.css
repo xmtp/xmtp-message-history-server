@@ -304,6 +304,9 @@ button:active {
 .level-Success {
     background: #bfffad !important;
 }
+.level-Error {
+    background: #ffadad !important;
+}
 .level-Fault {
     background: #edadff !important;
 }
