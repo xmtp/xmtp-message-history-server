@@ -321,6 +321,7 @@ button:active {
 .status-card {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(20px);
+    cursor: pointer;
     border-radius: 5px;
     padding: 5px;
     box-shadow:
@@ -343,6 +344,10 @@ button:active {
 
 .header {
     text-align: center;
+}
+.subhead {
+    color: #777;
+    font-size: 12px;
 }
 
 .title {

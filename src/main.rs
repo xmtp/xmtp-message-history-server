@@ -213,7 +213,7 @@ async fn main() -> Result<()> {
 
     cleanup::spawn_cleanup_worker();
 
-    let host = "0.0.0.0:5559";
+    let host = "0.0.0.0:5558";
     println!("Starting server at: {host}");
     HttpServer::new(move || {
         let cors = Cors::default()
