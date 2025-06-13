@@ -106,7 +106,7 @@ struct CheckKeyForm {
 
 impl CheckKeyForm {
     fn decode(key: &str) -> Result<(String, Vec<u8>), HttpResponse> {
-        let mut split = key.split(":");
+        let mut split = key.split("_");
         let Some(file_id) = split.nth(0) else {
             return Err(HttpResponse::NotAcceptable().finish());
         };
@@ -179,7 +179,7 @@ async fn client_events(_req: HttpRequest, form_data: web::Query<CheckKeyForm>) -
             _ => continue,
         };
 
-        let content = render_event_card(event_save.event, &event_save.details);
+        let content = render_event_card(&event_save);
 
         let group = match event_save.group_id {
             Some(group_id) => hex::encode(group_id),
@@ -213,7 +213,7 @@ async fn main() -> Result<()> {
 
     cleanup::spawn_cleanup_worker();
 
-    let host = "0.0.0.0:5558";
+    let host = "0.0.0.0:5559";
     println!("Starting server at: {host}");
     HttpServer::new(move || {
         let cors = Cors::default()

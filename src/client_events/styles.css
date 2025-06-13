@@ -297,6 +297,17 @@ button:active {
 /* ================================================== */
 /* Status card */
 /* ================================================== */
+
+.level-Warn {
+    background: #ffd3ad !important;
+}
+.level-Success {
+    background: #bfffad !important;
+}
+.level-Fault {
+    background: #edadff !important;
+}
+
 .bg-transparent {
     background: transparent;
 }
@@ -328,28 +339,6 @@ button:active {
         0 32px 64px rgba(0, 0, 0, 0.15),
         0 16px 32px rgba(0, 0, 0, 0.12),
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.status-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, #4ade80, #06b6d4, #8b5cf6, #f59e0b);
-    background-size: 200% 100%;
-    animation: gradient-shift 3s ease-in-out infinite;
-}
-
-@keyframes gradient-shift {
-    0%,
-    100% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
 }
 
 .header {
